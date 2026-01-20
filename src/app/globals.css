@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Professional typography for academic content */
+.prose-custom {
+  @apply text-gray-900 leading-relaxed;
+}
+
+.prose-custom h1 {
+  @apply text-3xl font-bold text-gray-900 mb-6 mt-8 first:mt-0;
+}
+
+.prose-custom h2 {
+  @apply text-2xl font-semibold text-gray-900 mb-4 mt-6;
+}
+
+.prose-custom h3 {
+  @apply text-xl font-semibold text-gray-900 mb-3 mt-5;
+}
+
+.prose-custom p {
+  @apply mb-4 leading-7;
+}
+
+.prose-custom ul, .prose-custom ol {
+  @apply mb-4 pl-6;
+}
+
+.prose-custom li {
+  @apply mb-2 leading-6;
+}
+
+.prose-custom blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-700 my-6;
+}
+
+.prose-custom a {
+  @apply text-blue-600 hover:text-blue-800 underline;
+}
+
+.prose-custom strong {
+  @apply font-semibold text-gray-900;
+}
+
+.prose-custom em {
+  @apply italic;
+}
+
+/* Reading-first design utilities */
+.reading-container {
+  @apply max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8;
+}
+
+.reading-width {
+  @apply max-w-2xl;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+}
+
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Academic color palette */
+.accent-blue { @apply text-blue-700; }
+.accent-blue-bg { @apply bg-blue-50; }
+
+.accent-green { @apply text-green-700; }
+.accent-green-bg { @apply bg-green-50; }
+
+.accent-purple { @apply text-purple-700; }
+.accent-purple-bg { @apply bg-purple-50; }
+
+.accent-orange { @apply text-orange-700; }
+.accent-orange-bg { @apply bg-orange-50; }
