@@ -4,9 +4,25 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { StatusButton } from '@/components/admin/StatusButton';
+import { FeaturedButton } from '@/components/admin/FeaturedButton';
+import { StarIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 interface PageParams {
   params: { id: string };
+}
+
+function getContentUrl(type: string, slug: string) {
+  const typeMap: Record<string, string> = {
+    'ARTICLE': 'articles',
+    'CASE_STUDY': 'case-studies',
+    'BOOK': 'books',
+    'BOOK_CHAPTER': 'books',
+    'TEACHING_NOTE': 'teaching-notes',
+    'COLLECTION': 'collections'
+  };
+  const urlPath = typeMap[type] || 'articles';
+  return `/${urlPath}/${slug}`;
 }
 
 export default async function AdminContentDetailPage({ params }: PageParams) {
@@ -43,21 +59,21 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{content.title}</h1>
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-bold text-gray-900 break-words">{content.title}</h1>
           <p className="text-gray-600 mt-2">Content Details & Management</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex-shrink-0 flex space-x-3">
           <Link
             href={`/admin/content/${id}/edit`}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
           >
             Edit Content
           </Link>
           <Link
             href="/admin/content"
-            className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium whitespace-nowrap"
           >
             ← All Content
           </Link>
@@ -83,11 +99,11 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
             }`}>
               {content.status}
             </span>
-            {content.featured && (
-              <span className="inline-block px-3 py-1 text-sm bg-purple-100 text-purple-800 rounded-full font-medium ml-3">
-                ⭐ Featured
-              </span>
-            )}
+            <FeaturedButton 
+              contentId={id} 
+              isFeatured={content.featured} 
+              size="md"
+            />
             <span className="ml-4 text-sm text-gray-700">
               {content.status === 'PUBLISHED'
                 ? 'This content is live and visible to all users.'
@@ -101,27 +117,38 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
           {/* Quick Status Actions */}
           <div className="flex space-x-2">
             {content.status === 'DRAFT' && (
-              <form action={`/api/admin/content/${id}/status`} method="POST" className="inline">
-                <input type="hidden" name="status" value="REVIEW" />
-                <button
-                  type="submit"
-                  className="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700 transition-colors"
-                >
-                  Send to Review
-                </button>
-              </form>
+              <StatusButton
+                contentId={id}
+                targetStatus="REVIEW"
+                label="Send to Review"
+                className="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700 transition-colors"
+              />
             )}
 
             {content.status === 'REVIEW' && (
-              <form action={`/api/admin/content/${id}/status`} method="POST" className="inline">
-                <input type="hidden" name="status" value="PUBLISHED" />
-                <button
-                  type="submit"
+              <>
+                <StatusButton
+                  contentId={id}
+                  targetStatus="PUBLISHED"
+                  label="Publish Now"
                   className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
-                >
-                  Publish Now
-                </button>
-              </form>
+                />
+                <StatusButton
+                  contentId={id}
+                  targetStatus="DRAFT"
+                  label="Back to Draft"
+                  className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors"
+                />
+              </>
+            )}
+
+            {content.status === 'PUBLISHED' && (
+              <StatusButton
+                contentId={id}
+                targetStatus="ARCHIVED"
+                label="Archive"
+                className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors"
+              />
             )}
           </div>
         </div>
@@ -145,6 +172,31 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
               dangerouslySetInnerHTML={{ __html: content.content }}
             />
           </div>
+
+          {/* PDF Document */}
+          {content.pdfUrl && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">PDF Document</h2>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <DocumentTextIcon className="w-10 h-10 text-red-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">{content.pdfFileName || 'Document.pdf'}</p>
+                    <p className="text-sm text-gray-500">PDF Document attached</p>
+                  </div>
+                </div>
+                <a
+                  href={content.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <EyeIcon className="w-4 h-4 mr-2" />
+                  View PDF
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -168,7 +220,7 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
 
               <div>
                 <span className="text-sm font-medium text-gray-500">Slug:</span>
-                <span className="text-sm text-gray-700 ml-2 font-mono">/{content.slug}</span>
+                <span className="text-sm text-gray-700 ml-2 font-mono break-all">/{content.slug}</span>
               </div>
 
               <div>
@@ -191,6 +243,27 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
                   <span className="text-sm text-gray-700 ml-2">
                     {new Date(content.publishedAt).toLocaleString()}
                   </span>
+                </div>
+              )}
+
+              {content.viewCount > 0 && (
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Views:</span>
+                  <span className="text-sm text-gray-700 ml-2">{content.viewCount}</span>
+                </div>
+              )}
+
+              {content.doi && (
+                <div>
+                  <span className="text-sm font-medium text-gray-500">DOI:</span>
+                  <a 
+                    href={`https://doi.org/${content.doi}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 ml-2 hover:underline"
+                  >
+                    {content.doi}
+                  </a>
                 </div>
               )}
             </div>
@@ -245,7 +318,7 @@ export default async function AdminContentDetailPage({ params }: PageParams) {
               </Link>
 
               <Link
-                href={`/${content.type.toLowerCase().replace('_', 's')}/${content.slug}`}
+                href={getContentUrl(content.type, content.slug)}
                 target="_blank"
                 className="block w-full bg-green-600 text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >

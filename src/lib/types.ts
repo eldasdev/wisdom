@@ -17,6 +17,11 @@ export interface ContentBase {
   tags: string[];
   featured: boolean;
   content: string;
+  // View/Impression tracking
+  viewCount?: number;
+  // PDF document (optional)
+  pdfUrl?: string;
+  pdfFileName?: string;
   // Citation metadata (optional, used for academic materials)
   doi?: string;
   citationCount?: number;
@@ -87,6 +92,13 @@ export type Content =
   | TeachingNote
   | Collection;
 
+// Serializable version with string dates for API responses
+export interface SerializableContent extends Omit<ContentBase, 'publishedAt' | 'updatedAt'> {
+  type: ContentType;
+  publishedAt: string; // ISO string
+  updatedAt?: string; // ISO string
+}
+
 export type ContentType = Content['type'];
 
 export interface SearchFilters {
@@ -94,7 +106,13 @@ export interface SearchFilters {
   tags?: string[];
   authors?: string[];
   industry?: string[];
+  company?: string[];
+  sector?: string[];
+  region?: string[];
+  country?: string[];
   category?: string[];
+  topic?: string[];
+  subject?: string[];
   featured?: boolean;
   dateFrom?: Date;
   dateTo?: Date;
@@ -111,4 +129,27 @@ export interface PaginatedResponse<T> {
 export interface SearchResult extends PaginatedResponse<Content> {
   query: string;
   filters: SearchFilters;
+}
+
+// NextAuth type extensions
+declare module 'next-auth' {
+  interface User {
+    role?: string;
+  }
+
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+    };
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    role?: string;
+  }
 }

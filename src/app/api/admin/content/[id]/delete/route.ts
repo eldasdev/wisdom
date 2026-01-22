@@ -3,11 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-interface RouteParams {
-  params: { id: string };
-}
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -18,7 +14,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
 
     // Check if content exists
     const content = await prisma.content.findUnique({

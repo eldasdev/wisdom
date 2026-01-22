@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, slug, description, content, type, status, featured, authorIds, tags, metadata } = validationResult.data;
+    const { title, slug, description, content, type, status, featured, authorIds, tags, metadata, pdfUrl, pdfFileName } = validationResult.data;
 
     // Check if slug is unique
     const existingContent = await prisma.content.findUnique({
@@ -96,6 +96,8 @@ export async function POST(request: NextRequest) {
           status,
           featured,
           metadata,
+          pdfUrl: pdfUrl || null,
+          pdfFileName: pdfFileName || null,
           publishedAt: new Date(), // Always set publishedAt on creation
         },
       });

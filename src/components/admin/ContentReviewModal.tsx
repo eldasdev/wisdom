@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Content, ContentStatus } from '@/lib/types';
+import { Content } from '@/lib/types';
+import { ContentStatus } from '@prisma/client';
 
 interface ContentReviewModalProps {
   content: Content | null;

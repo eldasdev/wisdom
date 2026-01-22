@@ -15,7 +15,13 @@ export async function GET(request: NextRequest) {
     const tags = searchParams.get('tags')?.split(',').filter(Boolean);
     const authors = searchParams.get('authors')?.split(',').filter(Boolean);
     const industry = searchParams.get('industry')?.split(',').filter(Boolean);
+    const company = searchParams.get('company')?.split(',').filter(Boolean);
+    const sector = searchParams.get('sector')?.split(',').filter(Boolean);
+    const region = searchParams.get('region')?.split(',').filter(Boolean);
+    const country = searchParams.get('country')?.split(',').filter(Boolean);
     const category = searchParams.get('category')?.split(',').filter(Boolean);
+    const topic = searchParams.get('topic')?.split(',').filter(Boolean);
+    const subject = searchParams.get('subject')?.split(',').filter(Boolean);
     const featured = searchParams.get('featured') === 'true' ? true : undefined;
     const dateFrom = searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined;
     const dateTo = searchParams.get('dateTo') ? new Date(searchParams.get('dateTo')!) : undefined;
@@ -25,7 +31,13 @@ export async function GET(request: NextRequest) {
       tags,
       authors,
       industry,
+      company,
+      sector,
+      region,
+      country,
       category,
+      topic,
+      subject,
       featured,
       dateFrom,
       dateTo,

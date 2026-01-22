@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, slug, description, content, type, tags, metadata } = validationResult.data;
+    const { title, slug, description, content, type, tags, metadata, pdfUrl, pdfFileName } = validationResult.data;
 
     // Get author's profile
     const author = await prisma.author.findUnique({
@@ -90,6 +90,8 @@ export async function POST(request: NextRequest) {
           status: 'DRAFT', // Authors create drafts first
           publishedAt: new Date(), // Always set publishedAt on creation
           metadata,
+          pdfUrl: pdfUrl || null,
+          pdfFileName: pdfFileName || null,
         },
       });
 

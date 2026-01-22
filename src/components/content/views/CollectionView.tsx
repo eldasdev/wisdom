@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Collection } from '@/lib/types';
+import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
+import { BookOpenIcon } from '@heroicons/react/24/outline';
 
 interface CollectionViewProps {
-  content: Collection;
+  content: SerializableContent;
   relatedContent?: any[];
 }
 
@@ -168,7 +169,8 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                 <div className="space-y-3">
                   <button className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                    📚 Read Collection
+                    <BookOpenIcon className="w-5 h-5 mr-2 inline" />
+                    Read Collection
                   </button>
                   <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                     📥 Download All

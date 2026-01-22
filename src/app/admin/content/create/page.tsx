@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
+import { PdfUploader } from '@/components/PdfUploader';
 
 type ContentType = 'ARTICLE' | 'CASE_STUDY' | 'BOOK' | 'BOOK_CHAPTER' | 'TEACHING_NOTE';
 type ContentStatus = 'DRAFT' | 'REVIEW' | 'PUBLISHED';
@@ -24,10 +25,18 @@ interface ContentFormData {
   featured: boolean;
   authorIds: string[];
   tags: string[];
+  // PDF file
+  pdfUrl?: string;
+  pdfFileName?: string;
   // Type-specific fields
   category?: string;
   industry?: string;
   company?: string;
+  sector?: string;
+  region?: string;
+  country?: string;
+  topic?: string;
+  subject?: string;
   isbn?: string;
   publisher?: string;
   pages?: number;
@@ -55,9 +64,16 @@ export default function AdminCreateContentPage() {
     tags: [],
   });
 
+  const [tagsInput, setTagsInput] = useState('');
+
   useEffect(() => {
     fetchAuthors();
   }, []);
+
+  // Sync tags input with form data
+  useEffect(() => {
+    setTagsInput(formData.tags.join(', '));
+  }, [formData.tags]);
 
   const fetchAuthors = async () => {
     try {
@@ -101,6 +117,7 @@ export default function AdminCreateContentPage() {
   };
 
   const handleTagsChange = (tagsString: string) => {
+    setTagsInput(tagsString);
     const tags = tagsString
       .split(',')
       .map(tag => tag.trim())
@@ -142,12 +159,18 @@ export default function AdminCreateContentPage() {
 
       // Prepare metadata based on content type
       const metadata: any = {};
-      if (formData.type === 'ARTICLE' && formData.category) {
-        metadata.category = formData.category;
-      }
+      // Common metadata fields for all content types
+      if (formData.industry) metadata.industry = formData.industry;
+      if (formData.company) metadata.company = formData.company;
+      if (formData.sector) metadata.sector = formData.sector;
+      if (formData.region) metadata.region = formData.region;
+      if (formData.country) metadata.country = formData.country;
+      if (formData.category) metadata.category = formData.category;
+      if (formData.topic) metadata.topic = formData.topic;
+      if (formData.subject) metadata.subject = formData.subject;
+
+      // Type-specific fields
       if (formData.type === 'CASE_STUDY') {
-        if (formData.industry) metadata.industry = formData.industry;
-        if (formData.company) metadata.company = formData.company;
         if (formData.learningObjectives) metadata.learningObjectives = formData.learningObjectives;
       }
       if (formData.type === 'BOOK') {
@@ -190,55 +213,123 @@ export default function AdminCreateContentPage() {
     }
   };
 
+  const renderCommonMetadataFields = () => (
+    <div className="space-y-4 mb-6">
+      <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Metadata (Optional)</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Industry
+          </label>
+          <input
+            type="text"
+            value={formData.industry || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Technology, Healthcare, Finance"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Company
+          </label>
+          <input
+            type="text"
+            value={formData.company || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Company name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sector
+          </label>
+          <input
+            type="text"
+            value={formData.sector || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, sector: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Private, Public, Non-profit"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Region
+          </label>
+          <input
+            type="text"
+            value={formData.region || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., North America, Europe, Asia-Pacific"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Country
+          </label>
+          <input
+            type="text"
+            value={formData.country || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Country name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Category
+          </label>
+          <input
+            type="text"
+            value={formData.category || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Strategy, Leadership, Innovation"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Topic
+          </label>
+          <input
+            type="text"
+            value={formData.topic || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, topic: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Specific topic or theme"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Subject
+          </label>
+          <input
+            type="text"
+            value={formData.subject || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Academic subject area"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   const renderTypeSpecificFields = () => {
     switch (formData.type) {
-      case 'ARTICLE':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category *
-              </label>
-              <input
-                type="text"
-                value={formData.category || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Strategy & Execution, Leadership, Innovation"
-                required
-              />
-            </div>
-          </div>
-        );
-
       case 'CASE_STUDY':
         return (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Industry *
-              </label>
-              <input
-                type="text"
-                value={formData.industry || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Technology, Healthcare, Finance"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Company
-              </label>
-              <input
-                type="text"
-                value={formData.company || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Company name (optional)"
-              />
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Learning Objectives
@@ -487,12 +578,15 @@ export default function AdminCreateContentPage() {
             </label>
             <input
               type="text"
-              value={formData.tags.join(', ')}
+              value={tagsInput}
               onChange={(e) => handleTagsChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="strategy, leadership, innovation (comma-separated)"
             />
           </div>
+
+          {/* Common Metadata Fields */}
+          {renderCommonMetadataFields()}
         </div>
 
         {/* Authors */}
@@ -540,6 +634,24 @@ export default function AdminCreateContentPage() {
           />
           <p className="text-xs text-gray-500 mt-2">
             Use the toolbar above to format your content. Supports headings, lists, bold, italic, and more.
+          </p>
+        </div>
+
+        {/* PDF Upload */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">PDF Document (Optional)</h2>
+          <PdfUploader
+            currentPdfUrl={formData.pdfUrl}
+            currentPdfFileName={formData.pdfFileName}
+            onUploadComplete={(url, fileName) => {
+              setFormData(prev => ({ ...prev, pdfUrl: url || undefined, pdfFileName: fileName || undefined }));
+            }}
+            onUploadError={(errorMsg) => {
+              setError(errorMsg);
+            }}
+          />
+          <p className="text-xs text-gray-500 mt-3">
+            Upload a PDF version of your content. This will be available for viewing and download on the content page.
           </p>
         </div>
 

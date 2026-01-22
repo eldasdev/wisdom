@@ -1,11 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { Book } from '@/lib/types';
+import dynamic from 'next/dynamic';
+import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
+import {
+  ListBulletIcon,
+  StarIcon,
+  BookOpenIcon,
+  ArrowDownTrayIcon,
+  DocumentTextIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
+
+// Dynamically import PdfViewer to avoid SSR issues with react-pdf
+const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  ),
+});
 
 interface BookViewProps {
-  content: Book;
+  content: SerializableContent;
   relatedContent?: any[];
 }
 
@@ -28,10 +47,10 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📖' },
-    { id: 'contents', label: 'Table of Contents', icon: '📑' },
-    { id: 'reviews', label: 'Reviews', icon: '⭐' },
-    { id: 'citations', label: 'Citations', icon: '📚' },
+    { id: 'overview', label: 'Overview', icon: BookOpenIcon },
+    { id: 'contents', label: 'Table of Contents', icon: ListBulletIcon },
+    { id: 'reviews', label: 'Reviews', icon: StarIcon },
+    { id: 'citations', label: 'Citations', icon: BookOpenIcon },
   ];
 
   // Mock table of contents - in real app, this would come from metadata
@@ -58,7 +77,7 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
             <div className="lg:w-64 flex-shrink-0">
               <div className="aspect-[3/4] bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
                 <div className="text-center text-white">
-                  <div className="text-4xl mb-2">📚</div>
+                  <BookOpenIcon className="w-16 h-16 mb-2" />
                   <div className="text-sm font-medium">Book Cover</div>
                 </div>
               </div>
@@ -102,6 +121,29 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
                 {content.description}
               </p>
 
+              {/* PDF Action Buttons */}
+              {content.pdfUrl && (
+                <div className="mb-6 flex flex-wrap gap-4">
+                  <a
+                    href={content.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-violet-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <EyeIcon className="w-5 h-5" />
+                    View PDF
+                  </a>
+                  <a
+                    href={content.pdfUrl}
+                    download={content.pdfFileName || 'book.pdf'}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 font-semibold rounded-xl border-2 border-purple-600 hover:bg-purple-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    <ArrowDownTrayIcon className="w-5 h-5" />
+                    Download PDF
+                  </a>
+                </div>
+              )}
+
               {/* Book Metadata */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div>
@@ -135,12 +177,13 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
                 <div className="mb-6">
                   <div className="flex flex-wrap gap-2">
                     {content.tags.map((tag) => (
-                      <span
+                      <Link
                         key={tag}
-                        className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                        href={`/tags/${encodeURIComponent(tag)}`}
+                        className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors cursor-pointer"
                       >
                         {tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -203,11 +246,13 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
                 {/* Book Description */}
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">About This Book</h3>
-                  <div className="prose prose-lg prose-gray max-w-none">
-                    <div
-                      dangerouslySetInnerHTML={{ __html: content.content }}
-                      className="leading-relaxed"
-                    />
+                  <div className="max-w-4xl mx-auto">
+                    <div className="bg-white rounded-lg p-8 sm:p-12">
+                      <div 
+                        className="text-gray-900 text-lg leading-relaxed prose prose-lg max-w-none"
+                        dangerouslySetInnerHTML={{ __html: content.content }}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -421,6 +466,40 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
             )}
           </div>
         </div>
+
+        {/* PDF Document Section */}
+        {content.pdfUrl && (
+          <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-lg overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <DocumentTextIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Book Preview / Full Text</h3>
+                  <p className="text-sm text-purple-100">
+                    {content.pdfFileName || 'View and download the full book'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={content.pdfUrl}
+                download={content.pdfFileName || 'book.pdf'}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-purple-600 bg-white rounded-xl hover:bg-purple-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download PDF
+              </a>
+            </div>
+            <div className="p-6">
+              <PdfViewer 
+                pdfUrl={content.pdfUrl} 
+                fileName={content.pdfFileName || undefined}
+                className="rounded-lg"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Related Books */}
         {relatedContent && relatedContent.length > 0 && (

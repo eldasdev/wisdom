@@ -1,4 +1,4 @@
-import { Content } from '@/lib/types';
+import { SerializableContent } from '@/lib/types';
 import { ArticleView } from './views/ArticleView';
 import { CaseStudyView } from './views/CaseStudyView';
 import { BookView } from './views/BookView';
@@ -6,7 +6,7 @@ import { TeachingNotesView } from './views/TeachingNotesView';
 import { CollectionView } from './views/CollectionView';
 
 interface ContentViewerProps {
-  content: Content;
+  content: SerializableContent;
   showMetadata?: boolean;
   relatedContent?: any[];
 }
@@ -34,28 +34,42 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
   const getTypeColor = (type: Content['type']) => {
     switch (type) {
       case 'article':
-        return 'accent-blue-bg';
+        return 'accent-article-bg';
       case 'case-study':
-        return 'accent-green-bg';
+        return 'accent-case-study-bg';
       case 'book':
-        return 'accent-purple-bg';
+        return 'accent-book-bg';
       case 'book-chapter':
-        return 'accent-orange-bg';
+        return 'accent-chapter-bg';
       case 'teaching-note':
-        return 'accent-blue-bg';
+        return 'accent-teaching-bg';
       case 'collection':
-        return 'accent-green-bg';
+        return 'accent-collection-bg';
       default:
-        return 'accent-blue-bg';
+        return 'accent-article-bg';
     }
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(date);
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return 'Date not available';
+
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return 'Invalid date';
+      }
+
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(dateObj);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
   };
 
   const getAuthorsText = () => {
@@ -67,7 +81,8 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
   const renderMetadata = () => {
     if (!showMetadata) return null;
 
-    // Optional citation fields (available for academic content)
+    // Optional fields
+    const viewCount = (content as any).viewCount as number | undefined;
     const citationCount = (content as any).citationCount as number | undefined;
     const doi = (content as any).doi as string | undefined;
 
@@ -97,21 +112,34 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
             <div className="text-sm text-gray-500">
               By {getAuthorsText()}
             </div>
-            <div className="text-sm text-gray-500">
-              {formatDate(content.publishedAt)}
-            </div>
-            {content.updatedAt && content.updatedAt > content.publishedAt && (
+            {content.publishedAt && (
+              <div className="text-sm text-gray-500">
+                {formatDate(content.publishedAt)}
+              </div>
+            )}
+            {content.updatedAt && content.publishedAt && content.updatedAt > content.publishedAt && (
               <div className="text-sm text-gray-500">
                 Updated {formatDate(content.updatedAt)}
               </div>
             )}
           </div>
 
-          {content.type === 'article' && 'readTime' in content && (
-            <div className="text-sm text-gray-500">
-              {content.readTime} min read
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {viewCount !== undefined && viewCount > 0 && (
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>{viewCount.toLocaleString()} views</span>
+              </div>
+            )}
+            {content.type === 'article' && 'readTime' in content && (
+              <div className="text-sm text-gray-500">
+                {content.readTime} min read
+              </div>
+            )}
+          </div>
         </div>
 
         {(citationCount !== undefined || doi) && (
@@ -143,12 +171,13 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
         {content.tags && Array.isArray(content.tags) && content.tags.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-2">
             {content.tags.map((tag) => (
-              <span
+              <Link
                 key={tag}
-                className="inline-block px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="inline-block px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors cursor-pointer"
               >
                 {tag}
-              </span>
+              </Link>
             ))}
           </div>
         )}

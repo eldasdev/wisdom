@@ -23,6 +23,13 @@ function validateUpdateContentData(data: any) {
   if (data.tags !== undefined && !Array.isArray(data.tags)) {
     errors.push('Tags must be an array');
   }
+  // PDF fields are optional and can be null/undefined to remove them
+  if (data.pdfUrl !== undefined && data.pdfUrl !== null && typeof data.pdfUrl !== 'string') {
+    errors.push('PDF URL must be a string');
+  }
+  if (data.pdfFileName !== undefined && data.pdfFileName !== null && typeof data.pdfFileName !== 'string') {
+    errors.push('PDF file name must be a string');
+  }
 
   return {
     success: errors.length === 0,
@@ -31,11 +38,7 @@ function validateUpdateContentData(data: any) {
   };
 }
 
-interface RouteParams {
-  params: { id: string };
-}
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Await params in Next.js 15
-    const { id } = await params;
+    const { id } = await context.params;
 
     // Get author's profile
     const author = await prisma.author.findUnique({
@@ -98,7 +101,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -158,7 +161,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { title, slug, description, content, tags, metadata } = validationResult.data;
+    const { title, slug, description, content, tags, metadata, pdfUrl, pdfFileName } = validationResult.data;
 
     // Check slug uniqueness if slug is being changed
     if (slug && slug !== existingContent.slug) {
@@ -185,6 +188,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           ...(description && { description }),
           ...(content && { content }),
           ...(metadata && { metadata }),
+          // PDF fields - can be set to null to remove
+          ...(pdfUrl !== undefined && { pdfUrl: pdfUrl || null }),
+          ...(pdfFileName !== undefined && { pdfFileName: pdfFileName || null }),
         },
       });
 
@@ -198,7 +204,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // Add new tag relationships in batch
         if (tags.length > 0) {
           // First, upsert all tags to ensure they exist
-          const tagPromises = tags.map(tagName =>
+          const tagPromises = tags.map((tagName: string) =>
             tx.tag.upsert({
               where: { name: tagName },
               update: {},
@@ -253,7 +259,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 

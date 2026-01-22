@@ -65,18 +65,40 @@
 
 /* Focus styles for accessibility */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply focus:outline-none focus:ring-2 focus:ring-[#0C2C55] focus:ring-offset-2;
 }
 
-/* Academic color palette */
-.accent-blue { @apply text-blue-700; }
-.accent-blue-bg { @apply bg-blue-50; }
+/* Vibrant academic color palette */
+.accent-primary { @apply text-[#0C2C55]; }
+.accent-primary-bg { @apply bg-[#0C2C55]/10; }
+.accent-primary-light { @apply text-[#0C2C55]/80; }
+.accent-primary-dark { @apply text-[#0C2C55]/90; }
 
-.accent-green { @apply text-green-700; }
-.accent-green-bg { @apply bg-green-50; }
+.accent-secondary { @apply text-pink-600; }
+.accent-secondary-bg { @apply bg-pink-50; }
+.accent-secondary-light { @apply text-pink-500; }
+.accent-secondary-dark { @apply text-pink-700; }
 
-.accent-purple { @apply text-purple-700; }
-.accent-purple-bg { @apply bg-purple-50; }
+.accent-article { @apply text-emerald-600; }
+.accent-article-bg { @apply bg-emerald-50; }
+.accent-article-light { @apply text-emerald-500; }
 
-.accent-orange { @apply text-orange-700; }
-.accent-orange-bg { @apply bg-orange-50; }
+.accent-case-study { @apply text-violet-600; }
+.accent-case-study-bg { @apply bg-violet-50; }
+.accent-case-study-light { @apply text-violet-500; }
+
+.accent-book { @apply text-amber-600; }
+.accent-book-bg { @apply bg-amber-50; }
+.accent-book-light { @apply text-amber-500; }
+
+.accent-teaching { @apply text-cyan-600; }
+.accent-teaching-bg { @apply bg-cyan-50; }
+.accent-teaching-light { @apply text-cyan-500; }
+
+.accent-collection { @apply text-rose-600; }
+.accent-collection-bg { @apply bg-rose-50; }
+.accent-collection-light { @apply text-rose-500; }
+
+.accent-chapter { @apply text-lime-600; }
+.accent-chapter-bg { @apply bg-lime-50; }
+.accent-chapter-light { @apply text-lime-500; }

@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { ContentStatus } from '@prisma/client';
+import { registerDoiForContent, isCrossrefConfigured } from '@/lib/crossref';
 
-interface RouteParams {
-  params: { id: string };
-}
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -18,14 +16,27 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
     const formData = await request.formData();
     const status = formData.get('status') as string;
 
-    if (!['DRAFT', 'REVIEW', 'PUBLISHED'].includes(status)) {
+    if (!['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED'].includes(status)) {
       return NextResponse.json(
         { error: 'Invalid status' },
         { status: 400 }
+      );
+    }
+
+    // Fetch current content to check existing status
+    const existingContent = await prisma.content.findUnique({
+      where: { id },
+      select: { status: true, doi: true },
+    });
+
+    if (!existingContent) {
+      return NextResponse.json(
+        { error: 'Content not found' },
+        { status: 404 }
       );
     }
 
@@ -33,15 +44,64 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const updatedContent = await prisma.content.update({
       where: { id },
       data: {
-        status,
+        status: status as ContentStatus,
         publishedAt: status === 'PUBLISHED' ? new Date() : undefined,
+      },
+      include: {
+        authors: {
+          include: { author: true },
+        },
+      },
+    });
+
+    // If publishing and no DOI exists, attempt DOI registration
+    let doiResult = null;
+    if (
+      status === 'PUBLISHED' &&
+      !existingContent.doi &&
+      isCrossrefConfigured()
+    ) {
+      console.log(`[Publish] Attempting DOI registration for content: ${id}`);
+      
+      // Register DOI asynchronously (don't block the response)
+      // For synchronous registration, remove the Promise wrapper
+      doiResult = await registerDoiForContent(id);
+      
+      if (doiResult.success) {
+        console.log(`[Publish] DOI registered: ${doiResult.doi}`);
+      } else {
+        console.warn(`[Publish] DOI registration failed: ${doiResult.error}`);
+        // Don't fail the publish - DOI can be retried later
+      }
+    }
+
+    // Fetch updated content to include DOI if it was registered
+    const finalContent = await prisma.content.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        doi: true,
+        crossrefStatus: true,
+        publishedAt: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      content: updatedContent,
-      message: `Content ${status === 'PUBLISHED' ? 'published' : status === 'DRAFT' ? 'moved to draft' : 'sent to review'} successfully`
+      content: finalContent,
+      doi: doiResult?.success ? doiResult.doi : null,
+      doiRegistration: doiResult ? {
+        success: doiResult.success,
+        message: doiResult.message || doiResult.error,
+      } : null,
+      message: `Content ${
+        status === 'PUBLISHED' ? 'published' : 
+        status === 'DRAFT' ? 'moved to draft' : 
+        status === 'ARCHIVED' ? 'archived' :
+        'sent to review'
+      } successfully${doiResult?.success ? ' with DOI' : ''}`,
     });
 
   } catch (error) {

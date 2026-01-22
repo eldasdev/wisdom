@@ -4,14 +4,14 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const author = await prisma.author.findUnique({
-      where: { id: id },
+      where: { id },
       include: {
         authoredContent: {
           include: {
@@ -64,8 +64,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const { name, title, institution, bio, email, website, linkedin, twitter, image } = await request.json();
 
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Name is required' },
+        { status: 400 }
+      );
+    }
+
     const author = await prisma.author.update({
-      where: { id: id },
+      where: { id },
       data: {
         name,
         title,
@@ -109,8 +116,33 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+
+    // Check if author has any content
+    const authorWithContent = await prisma.author.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { authoredContent: true }
+        }
+      }
+    });
+
+    if (!authorWithContent) {
+      return NextResponse.json(
+        { error: 'Author not found' },
+        { status: 404 }
+      );
+    }
+
+    if (authorWithContent._count.authoredContent > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete author with associated content. Remove content associations first.' },
+        { status: 400 }
+      );
+    }
+
     await prisma.author.delete({
-      where: { id: id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Author deleted successfully' });

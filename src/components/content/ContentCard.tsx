@@ -11,19 +11,38 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
   const getTypeColor = (type: SerializableContent['type']) => {
     switch (type) {
       case 'article':
-        return 'accent-blue';
+        return 'accent-article';
       case 'case-study':
-        return 'accent-green';
+        return 'accent-case-study';
       case 'book':
-        return 'accent-purple';
+        return 'accent-book';
       case 'book-chapter':
-        return 'accent-orange';
+        return 'accent-chapter';
       case 'teaching-note':
-        return 'accent-blue';
+        return 'accent-teaching';
       case 'collection':
-        return 'accent-green';
+        return 'accent-collection';
       default:
-        return 'accent-blue';
+        return 'accent-article';
+    }
+  };
+
+  const getTypeBgColor = (type: SerializableContent['type']) => {
+    switch (type) {
+      case 'article':
+        return 'accent-article-bg';
+      case 'case-study':
+        return 'accent-case-study-bg';
+      case 'book':
+        return 'accent-book-bg';
+      case 'book-chapter':
+        return 'accent-chapter-bg';
+      case 'teaching-note':
+        return 'accent-teaching-bg';
+      case 'collection':
+        return 'accent-collection-bg';
+      default:
+        return 'accent-article-bg';
     }
   };
 
@@ -81,7 +100,7 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
       <Link href={getContentUrl(content.type, content.slug)} className="block">
         <div className="card-hover bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-start justify-between mb-2">
-            <span className={`inline-block px-2 py-1 text-xs font-medium ${getTypeColor(content.type)} bg-gray-100 rounded`}>
+            <span className={`inline-block px-2 py-1 text-xs font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded`}>
               {getTypeLabel(content.type)}
             </span>
             {content.featured && (
@@ -109,7 +128,7 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
       <div className="card-hover bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="p-6">
           <div className="flex items-start justify-between mb-3">
-            <span className={`inline-block px-3 py-1 text-sm font-medium ${getTypeColor(content.type)} bg-gray-100 rounded-full`}>
+            <span className={`inline-block px-3 py-1 text-sm font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded-full`}>
               {getTypeLabel(content.type)}
             </span>
             {content.featured && (
@@ -133,14 +152,16 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
           </div>
 
           {content.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               {content.tags.slice(0, 3).map((tag) => (
-                <span
+                <Link
                   key={tag}
-                  className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                  href={`/tags/${encodeURIComponent(tag)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 hover:text-gray-900 transition-colors cursor-pointer"
                 >
                   {tag}
-                </span>
+                </Link>
               ))}
               {content.tags.length > 3 && (
                 <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">

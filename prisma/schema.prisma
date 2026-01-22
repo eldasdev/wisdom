@@ -75,6 +75,7 @@ model Author {
   institution String?
   bio         String?
   email       String?  @unique
+  orcid       String?  // ORCID identifier (e.g., 0000-0002-1825-0097)
   website     String?
   linkedin    String?
   twitter     String?
@@ -97,11 +98,20 @@ model Content {
   featured      Boolean        @default(false)
   status        ContentStatus  @default(DRAFT)
 
+  // View/Impression tracking
+  viewCount     Int            @default(0) // Number of unique views/impressions
+
+  // PDF file storage
+  pdfUrl        String?        // URL to the uploaded PDF file
+  pdfFileName   String?        // Original filename of the uploaded PDF
+
   // Citation tracking
-  doi           String?        // Digital Object Identifier
-  citationCount Int            @default(0) // Number of times cited
-  citationStyle String?        // Preferred citation style (APA, MLA, Chicago, etc.)
-  bibtex        String?        // BibTeX citation format
+  doi              String?        // Digital Object Identifier
+  crossrefStatus   CrossrefStatus? // Crossref registration status
+  crossrefDepositId String?       // Crossref deposit ID for tracking
+  citationCount    Int            @default(0) // Number of times cited
+  citationStyle    String?        // Preferred citation style (APA, MLA, Chicago, etc.)
+  bibtex           String?        // BibTeX citation format
 
   // Author relationship (many-to-many through ContentAuthor)
   authors       ContentAuthor[]
@@ -162,4 +172,10 @@ enum ContentStatus {
   REVIEW
   PUBLISHED
   ARCHIVED
+}
+
+enum CrossrefStatus {
+  PENDING
+  REGISTERED
+  FAILED
 }

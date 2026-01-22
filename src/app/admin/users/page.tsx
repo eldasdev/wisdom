@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { DateFormatter } from '@/components/admin/DateFormatter';
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -92,7 +93,7 @@ export default async function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    <DateFormatter date={user.createdAt} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">

@@ -1,8 +1,8 @@
-import { Content } from '@/lib/types';
+import { SerializableContent } from '@/lib/types';
 import { ContentCard } from './ContentCard';
 
 interface ContentGridProps {
-  content: Content[];
+  content: SerializableContent[];
   compact?: boolean;
   columns?: 1 | 2 | 3 | 4;
   showExcerpt?: boolean;

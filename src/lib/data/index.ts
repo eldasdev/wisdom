@@ -171,7 +171,7 @@ export class ContentDataLayer {
     return serializeContent(content.map(item => ({
       ...item,
       authors: item.authors.map(ca => ca.author),
-      tags: content.tags.map(ct => ct.tag.name)
+      tags: item.tags.map(ct => ct.tag.name)
     })));
   }
 
@@ -259,14 +259,53 @@ export class ContentDataLayer {
       }
     }
 
-    // Handle metadata filters (industry, category)
+    // Handle metadata filters (industry, company, sector, region, country, category, topic, subject)
     if (filters.industry && filters.industry.length > 0) {
       where.AND = where.AND || [];
       where.AND.push({
-        type: 'CASE_STUDY',
         metadata: {
           path: ['industry'],
-          string_contains: filters.industry[0] // Simplified - takes first industry
+          string_contains: filters.industry[0]
+        }
+      });
+    }
+
+    if (filters.company && filters.company.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['company'],
+          string_contains: filters.company[0]
+        }
+      });
+    }
+
+    if (filters.sector && filters.sector.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['sector'],
+          string_contains: filters.sector[0]
+        }
+      });
+    }
+
+    if (filters.region && filters.region.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['region'],
+          string_contains: filters.region[0]
+        }
+      });
+    }
+
+    if (filters.country && filters.country.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['country'],
+          string_contains: filters.country[0]
         }
       });
     }
@@ -274,10 +313,29 @@ export class ContentDataLayer {
     if (filters.category && filters.category.length > 0) {
       where.AND = where.AND || [];
       where.AND.push({
-        type: 'ARTICLE',
         metadata: {
           path: ['category'],
-          string_contains: filters.category[0] // Simplified - takes first category
+          string_contains: filters.category[0]
+        }
+      });
+    }
+
+    if (filters.topic && filters.topic.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['topic'],
+          string_contains: filters.topic[0]
+        }
+      });
+    }
+
+    if (filters.subject && filters.subject.length > 0) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        metadata: {
+          path: ['subject'],
+          string_contains: filters.subject[0]
         }
       });
     }
@@ -315,7 +373,7 @@ export class ContentDataLayer {
     };
   }
 
-  // Get related content (by tags, authors, or type)
+  // Get related content - ONLY returns content of the SAME TYPE
   static async getRelated(contentId: string, limit: number = 5): Promise<SerializableContent[]> {
     const content = await prisma.content.findUnique({
       where: { id: contentId },
@@ -327,91 +385,43 @@ export class ContentDataLayer {
 
     if (!content) return [];
 
-    const related: any[] = [];
-    const seen = new Set([contentId]);
+    console.log(`[getRelated] Looking for type: ${content.type}, contentId: ${contentId}`);
 
-    // Find content with matching tags
-    if (content.tags.length > 0 && related.length < limit) {
-      const tagIds = content.tags.map(ct => ct.tagId);
-      const taggedContent = await prisma.content.findMany({
-        where: {
-          tags: {
-            some: {
-              tagId: { in: tagIds }
-            }
-          },
-          status: 'PUBLISHED',
-          id: { not: contentId }
-        },
-        include: {
-          authors: { include: { author: true } },
-          tags: { include: { tag: true } }
-        },
-        take: limit - related.length
-      });
+    // Only get content of the SAME TYPE - prioritize those with matching tags
+    const tagIds = content.tags.map(ct => ct.tagId);
+    
+    const relatedContent = await prisma.content.findMany({
+      where: {
+        type: content.type, // SAME TYPE ONLY!
+        status: 'PUBLISHED',
+        id: { not: contentId }
+      },
+      include: {
+        authors: { include: { author: true } },
+        tags: { include: { tag: true } }
+      },
+      orderBy: [
+        { featured: 'desc' }, // Featured first
+        { publishedAt: 'desc' } // Then by date
+      ],
+      take: limit * 2 // Get more to sort by tag relevance
+    });
 
-      taggedContent.forEach(item => {
-        if (!seen.has(item.id)) {
-          related.push(item);
-          seen.add(item.id);
-        }
-      });
-    }
+    console.log(`[getRelated] Found ${relatedContent.length} items of type ${content.type}:`, 
+      relatedContent.map(r => ({ id: r.id, type: r.type, title: r.title })));
 
-    // Find content by same authors
-    if (related.length < limit && content.authors.length > 0) {
-      const authorIds = content.authors.map(ca => ca.authorId);
-      const authorContent = await prisma.content.findMany({
-        where: {
-          authors: {
-            some: {
-              authorId: { in: authorIds }
-            }
-          },
-          status: 'PUBLISHED',
-          id: { not: contentId },
-          id: { notIn: Array.from(seen) }
-        },
-        include: {
-          authors: { include: { author: true } },
-          tags: { include: { tag: true } }
-        },
-        take: limit - related.length
-      });
+    // Sort by tag relevance (more matching tags = higher priority)
+    const sortedContent = relatedContent
+      .map(item => {
+        const itemTagIds = item.tags.map(t => t.tagId);
+        const matchingTags = tagIds.filter(id => itemTagIds.includes(id)).length;
+        return { item, matchingTags };
+      })
+      .sort((a, b) => b.matchingTags - a.matchingTags)
+      .slice(0, limit)
+      .map(({ item }) => item);
 
-      authorContent.forEach(item => {
-        if (!seen.has(item.id)) {
-          related.push(item);
-          seen.add(item.id);
-        }
-      });
-    }
-
-    // Find content of same type
-    if (related.length < limit) {
-      const typeContent = await prisma.content.findMany({
-        where: {
-          type: content.type,
-          status: 'PUBLISHED',
-          id: { not: contentId },
-          id: { notIn: Array.from(seen) }
-        },
-        include: {
-          authors: { include: { author: true } },
-          tags: { include: { tag: true } }
-        },
-        take: limit - related.length
-      });
-
-      typeContent.forEach(item => {
-        if (!seen.has(item.id)) {
-          related.push(item);
-          seen.add(item.id);
-        }
-      });
-    }
-
-    return serializeContent(related.map(item => ({
+    return serializeContent(sortedContent.map(item => ({
       ...item,
       authors: item.authors.map(ca => ca.author),
       tags: item.tags.map(ct => ct.tag.name)
@@ -468,39 +478,82 @@ export class ContentDataLayer {
     const [
       tagResults,
       authorResults,
-      industryResults,
-      categoryResults
+      metadataResults
     ] = await Promise.all([
       prisma.tag.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
       prisma.author.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
       prisma.content.findMany({
-        where: { type: 'CASE_STUDY', status: 'PUBLISHED' },
-        select: { metadata: true }
-      }),
-      prisma.content.findMany({
-        where: { type: 'ARTICLE', status: 'PUBLISHED' },
-        select: { metadata: true }
+        where: { status: 'PUBLISHED' },
+        select: { metadata: true, type: true }
       })
     ]);
 
+    // Initialize filter sets
     const industries = new Set<string>();
+    const companies = new Set<string>();
+    const sectors = new Set<string>();
+    const regions = new Set<string>();
+    const countries = new Set<string>();
     const categories = new Set<string>();
+    const topics = new Set<string>();
+    const subjects = new Set<string>();
 
-    industryResults.forEach(content => {
-      if (content.metadata && typeof content.metadata === 'object' && 'industry' in content.metadata) {
-        industries.add((content.metadata as any).industry);
-      }
-    });
+    // Extract metadata values from all published content
+    metadataResults.forEach(content => {
+      if (content.metadata && typeof content.metadata === 'object') {
+        const metadata = content.metadata as any;
 
-    categoryResults.forEach(content => {
-      if (content.metadata && typeof content.metadata === 'object' && 'category' in content.metadata) {
-        categories.add((content.metadata as any).category);
+        // Industry (case studies and other content)
+        if ('industry' in metadata && metadata.industry) {
+          industries.add(metadata.industry);
+        }
+
+        // Company (case studies, articles)
+        if ('company' in metadata && metadata.company) {
+          companies.add(metadata.company);
+        }
+
+        // Sector (broader industry classification)
+        if ('sector' in metadata && metadata.sector) {
+          sectors.add(metadata.sector);
+        }
+
+        // Region/Geographic location
+        if ('region' in metadata && metadata.region) {
+          regions.add(metadata.region);
+        }
+
+        // Country
+        if ('country' in metadata && metadata.country) {
+          countries.add(metadata.country);
+        }
+
+        // Category (articles, books, teaching notes)
+        if ('category' in metadata && metadata.category) {
+          categories.add(metadata.category);
+        }
+
+        // Topic (specific subject areas)
+        if ('topic' in metadata && metadata.topic) {
+          topics.add(metadata.topic);
+        }
+
+        // Subject (academic subjects for teaching notes)
+        if ('subject' in metadata && metadata.subject) {
+          subjects.add(metadata.subject);
+        }
       }
     });
 
     return {
       industries: Array.from(industries).sort(),
+      companies: Array.from(companies).sort(),
+      sectors: Array.from(sectors).sort(),
+      regions: Array.from(regions).sort(),
+      countries: Array.from(countries).sort(),
       categories: Array.from(categories).sort(),
+      topics: Array.from(topics).sort(),
+      subjects: Array.from(subjects).sort(),
       tags: tagResults.map(t => t.name),
       authors: authorResults.map(a => a.name),
     };

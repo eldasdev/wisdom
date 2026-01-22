@@ -1,11 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { CaseStudy } from '@/lib/types';
+import dynamic from 'next/dynamic';
+import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
+import {
+  ClipboardDocumentListIcon,
+  MagnifyingGlassIcon,
+  BookOpenIcon,
+  ArrowDownTrayIcon,
+  DocumentTextIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
+
+// Dynamically import PdfViewer to avoid SSR issues with react-pdf
+const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  ),
+});
 
 interface CaseStudyViewProps {
-  content: CaseStudy;
+  content: SerializableContent;
   relatedContent?: any[];
 }
 
@@ -29,9 +48,9 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
   };
 
   const tabs = [
-    { id: 'case', label: 'Case Study', icon: '📋' },
-    { id: 'analysis', label: 'Analysis', icon: '🔍' },
-    { id: 'teaching', label: 'Teaching Notes', icon: '📚' },
+    { id: 'case', label: 'Case Study', icon: ClipboardDocumentListIcon },
+    { id: 'analysis', label: 'Analysis', icon: MagnifyingGlassIcon },
+    { id: 'teaching', label: 'Teaching Notes', icon: BookOpenIcon },
   ];
 
   return (
@@ -67,6 +86,29 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
           <p className="text-xl text-gray-600 mb-6 max-w-4xl">
             {content.description}
           </p>
+
+          {/* PDF Action Buttons */}
+          {content.pdfUrl && (
+            <div className="mb-6 flex flex-wrap gap-4">
+              <a
+                href={content.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <EyeIcon className="w-5 h-5" />
+                View PDF
+              </a>
+              <a
+                href={content.pdfUrl}
+                download={content.pdfFileName || 'case-study.pdf'}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl border-2 border-emerald-600 hover:bg-emerald-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download PDF
+              </a>
+            </div>
+          )}
 
           {/* Case Details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -151,11 +193,13 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
 
           <div className="p-8">
             {activeTab === 'case' && (
-              <div className="prose prose-lg prose-gray max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{ __html: content.content }}
-                  className="leading-relaxed"
-                />
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-lg p-8 sm:p-12">
+                  <div 
+                    className="text-gray-900 text-lg leading-relaxed prose prose-lg max-w-none"
+                    dangerouslySetInnerHTML={{ __html: content.content }}
+                  />
+                </div>
 
                 {/* Expandable Teaching Notes Preview */}
                 {content.teachingNotes && (
@@ -242,11 +286,13 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
             {activeTab === 'teaching' && (
               <div className="space-y-8">
                 {content.teachingNotes ? (
-                  <div className="prose prose-lg prose-gray max-w-none">
-                    <div
-                      dangerouslySetInnerHTML={{ __html: content.teachingNotes }}
-                      className="leading-relaxed"
-                    />
+                  <div className="max-w-4xl mx-auto">
+                    <div className="bg-white rounded-lg p-8 sm:p-12">
+                      <div 
+                        className="text-gray-900 text-lg leading-relaxed prose prose-lg max-w-none"
+                        dangerouslySetInnerHTML={{ __html: content.teachingNotes }}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
@@ -330,6 +376,40 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
                 </details>
               </div>
             )}
+          </div>
+        )}
+
+        {/* PDF Document Section */}
+        {content.pdfUrl && (
+          <div className="bg-white rounded-2xl border-2 border-emerald-200 shadow-lg overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <DocumentTextIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Case Study Document</h3>
+                  <p className="text-sm text-emerald-100">
+                    {content.pdfFileName || 'View and download the full case study'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={content.pdfUrl}
+                download={content.pdfFileName || 'case-study.pdf'}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-emerald-600 bg-white rounded-xl hover:bg-emerald-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download PDF
+              </a>
+            </div>
+            <div className="p-6">
+              <PdfViewer 
+                pdfUrl={content.pdfUrl} 
+                fileName={content.pdfFileName || undefined}
+                className="rounded-lg"
+              />
+            </div>
           </div>
         )}
 

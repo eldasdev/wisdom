@@ -109,7 +109,7 @@ export default async function ProfilePage() {
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm font-medium text-gray-700">Last Updated</span>
                     <span className="text-sm text-gray-900">
-                      {new Date(user.updatedAt).toLocaleDateString()}
+                      {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
                 </div>

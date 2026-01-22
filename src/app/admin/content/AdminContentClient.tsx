@@ -1,11 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { FeaturedButton } from '@/components/admin/FeaturedButton';
 import { ContentReviewModal } from '@/components/admin/ContentReviewModal';
 import { SuccessNotification } from '@/components/admin/SuccessNotification';
-import { Content, ContentStatus } from '@/lib/types';
+import { Content } from '@/lib/types';
+import { ContentStatus } from '@prisma/client';
+import {
+  PlusIcon,
+  EyeIcon,
+  PencilIcon,
+  DocumentTextIcon,
+  ArrowTopRightOnSquareIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ArchiveBoxIcon,
+  StarIcon
+} from '@heroicons/react/24/outline';
+
+// Consistent date formatting
+const formatDate = (date: Date | string | null | undefined) => {
+  if (!date) return 'Date not available';
+
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return 'Invalid date';
+
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
 
 interface RawContent {
   id: string;
@@ -20,6 +51,7 @@ interface RawContent {
   updatedAt: string;
   createdAt: string;
   metadata: any;
+  viewCount?: number;
   authors?: { author: { id: string; name: string; title?: string; institution?: string; bio?: string } }[];
   tags?: { tag: { id: string; name: string } }[];
 }
@@ -30,11 +62,20 @@ interface AdminContentClientProps {
     ALL: number;
     DRAFT: number;
     REVIEW: number;
+    FEATURED?: number;
     PUBLISHED: number;
     ARCHIVED: number;
   };
-  currentStatus?: ContentStatus;
+  currentStatus?: ContentStatus | 'FEATURED';
 }
+
+const statusTabs = [
+  { key: undefined, label: 'All', icon: DocumentTextIcon, color: 'gray' },
+  { key: 'DRAFT', label: 'Drafts', icon: ClockIcon, color: 'gray' },
+  { key: 'REVIEW', label: 'In Review', icon: EyeIcon, color: 'amber' },
+  { key: 'PUBLISHED', label: 'Published', icon: CheckCircleIcon, color: 'green' },
+  { key: 'FEATURED', label: 'Featured', icon: StarIcon, color: 'purple' },
+];
 
 export function AdminContentClient({ initialContent, statusCounts, currentStatus }: AdminContentClientProps) {
   const [content, setContent] = useState(initialContent);
@@ -45,10 +86,12 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
     visible: false,
   });
 
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
+
   const handleReviewClick = (rawItem: RawContent) => {
     try {
-      // Create a basic content object that satisfies the Content type
-      // We'll cast it to avoid TypeScript issues with union types
       const baseContent = {
         id: rawItem.id,
         title: rawItem.title,
@@ -66,7 +109,6 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
         metadata: rawItem.metadata || {},
       };
 
-      // Add type-specific properties with defaults
       let transformedContent: Content;
 
       switch (rawItem.type) {
@@ -129,7 +171,6 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
           };
           break;
         default:
-          // Default to article type
           transformedContent = {
             ...baseContent,
             type: 'article',
@@ -139,8 +180,8 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
           };
       }
 
-    setSelectedContent(transformedContent);
-    setIsModalOpen(true);
+      setSelectedContent(transformedContent);
+      setIsModalOpen(true);
     } catch (error) {
       console.error('Error transforming content for modal:', error);
       alert('Error opening review modal. Please try again.');
@@ -155,15 +196,10 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
       });
 
       if (response.ok) {
-        // Update local state
         setContent(prev => prev.map(item =>
           item.id === contentId ? { ...item, status: 'PUBLISHED' } : item
         ));
-
-        setNotification({
-          message: 'Content published successfully!',
-          visible: true,
-        });
+        setNotification({ message: 'Content published successfully!', visible: true });
       } else {
         throw new Error('Failed to publish content');
       }
@@ -181,15 +217,10 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
       });
 
       if (response.ok) {
-        // Update local state
         setContent(prev => prev.map(item =>
           item.id === contentId ? { ...item, status: 'DRAFT' } : item
         ));
-
-        setNotification({
-          message: 'Content sent back to draft.',
-          visible: true,
-        });
+        setNotification({ message: 'Content sent back to draft.', visible: true });
       } else {
         throw new Error('Failed to deny content');
       }
@@ -201,6 +232,12 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
 
   const closeNotification = () => {
     setNotification(prev => ({ ...prev, visible: false }));
+  };
+
+  const getStatusCount = (key: string | undefined) => {
+    if (!key) return statusCounts.ALL;
+    if (key === 'FEATURED') return statusCounts.FEATURED || 0;
+    return statusCounts[key as keyof typeof statusCounts] || 0;
   };
 
   return (
@@ -219,126 +256,172 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
         onDeny={handleDeny}
       />
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Management</h2>
-
-        {/* Status Filter Tabs */}
-        <div className="flex space-x-1 mb-6">
-          {[
-            { key: undefined, label: 'All', count: statusCounts.ALL },
-            { key: 'DRAFT', label: 'Drafts', count: statusCounts.DRAFT },
-            { key: 'REVIEW', label: 'In Review', count: statusCounts.REVIEW },
-            { key: 'PUBLISHED', label: 'Published', count: statusCounts.PUBLISHED },
-          ].map(({ key, label, count }) => (
-            <Link
-              key={key || 'all'}
-              href={key ? `/admin/content?status=${key}` : '/admin/content'}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                currentStatus === key || (!currentStatus && !key)
-                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              {label} ({count})
-            </Link>
-          ))}
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-between items-center mb-6">
-          <div></div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Content Management</h1>
+            <p className="text-gray-500 mt-1">Manage all platform content</p>
+          </div>
           <Link
             href="/admin/content/create"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#0C2C55] to-slate-700 text-white rounded-xl hover:from-[#0C2C55]/90 hover:to-slate-600 transition-all duration-200 shadow-lg shadow-[#0C2C55]/25 text-sm font-medium"
           >
-            Create New Content
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Create Content
           </Link>
         </div>
 
-        {/* Content Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {content.map((item) => (
-              <li key={item.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
+        {/* Status Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {statusTabs.map(({ key, label, icon: Icon }) => {
+            const count = getStatusCount(key);
+            const isActive = currentStatus === key || (!currentStatus && !key);
+            
+            return (
+              <Link
+                key={key || 'all'}
+                href={key ? `/admin/content?status=${key}` : '/admin/content'}
+                className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-[#0C2C55] text-white shadow-lg shadow-[#0C2C55]/25'
+                    : 'bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                <Icon className="w-4 h-4 mr-1.5" />
+                {label}
+                <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-md ${
+                  isActive ? 'bg-white/20' : 'bg-gray-100'
+                }`}>
+                  {count}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Content List */}
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          {content.length === 0 ? (
+            <div className="text-center py-16 px-4">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <DocumentTextIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {currentStatus ? `No ${currentStatus.toLowerCase()} content` : 'No content found'}
+              </h3>
+              <p className="text-gray-500 mb-6">
+                {currentStatus ? (
+                  <Link href="/admin/content" className="text-[#0C2C55] hover:underline">
+                    View all content →
+                  </Link>
+                ) : (
+                  'Create your first piece of content to get started.'
+                )}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {content.map((item) => (
+                <div key={item.id} className="p-4 sm:p-5 hover:bg-gray-50 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    {/* Content Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2">
+                        <FeaturedButton 
+                          contentId={item.id} 
+                          isFeatured={item.featured || false} 
+                          size="sm"
+                          showLabel={false}
+                        />
                         <Link
                           href={`/admin/content/${item.id}`}
-                          className="text-lg font-medium text-blue-600 hover:text-blue-800 truncate"
+                          className="text-base font-semibold text-gray-900 hover:text-[#0C2C55] transition-colors line-clamp-2 flex-1"
                         >
                           {item.title}
                         </Link>
-                        <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                          <span>Type: {item.type.replace('_', ' ')}</span>
-                          <span>Status: {item.status}</span>
-                          <span>Updated: {new Date(item.updatedAt).toLocaleDateString()}</span>
-                          <span>By: {item.authors?.[0]?.author?.name || 'Unknown'}</span>
-                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {/* Status Actions */}
-                        {item.status === 'DRAFT' && (
-                          <button
-                            onClick={() => handleReviewClick(item)}
-                            className="text-orange-600 hover:text-orange-900 text-xs px-2 py-1 bg-orange-50 rounded"
-                          >
-                            Send to Review
-                          </button>
+                      
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</p>
+                      
+                      {/* Meta */}
+                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-md ${
+                          item.type === 'ARTICLE' ? 'bg-blue-100 text-blue-700' :
+                          item.type === 'CASE_STUDY' ? 'bg-emerald-100 text-emerald-700' :
+                          item.type === 'BOOK' ? 'bg-purple-100 text-purple-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {item.type.replace('_', ' ')}
+                        </span>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-md ${
+                          item.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' :
+                          item.status === 'DRAFT' ? 'bg-gray-100 text-gray-700' :
+                          item.status === 'REVIEW' ? 'bg-amber-100 text-amber-700' :
+                          item.status === 'ARCHIVED' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {item.status}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {item.authors?.[0]?.author?.name || 'Unknown author'}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {formatDate(item.updatedAt)}
+                        </span>
+                        {(item.viewCount ?? 0) > 0 && (
+                          <span className="flex items-center text-xs text-gray-400">
+                            <EyeIcon className="w-3 h-3 mr-0.5" />
+                            {item.viewCount}
+                          </span>
                         )}
-                        {item.status === 'REVIEW' && (
-                          <button
-                            onClick={() => handleReviewClick(item)}
-                            className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 bg-blue-50 rounded"
-                          >
-                            Review Content
-                          </button>
-                        )}
-                        {item.status === 'PUBLISHED' && (
-                          <>
-                            <Link
-                              href={`/articles/${item.slug}`}
-                              target="_blank"
-                              className="text-green-600 hover:text-green-900 text-xs px-2 py-1 bg-green-50 rounded"
-                            >
-                              View Live
-                            </Link>
-                            <button
-                              onClick={() => handleReviewClick(item)}
-                              className="text-gray-600 hover:text-gray-900 text-xs px-2 py-1 bg-gray-50 rounded"
-                            >
-                              Unpublish
-                            </button>
-                          </>
-                        )}
+                      </div>
+                    </div>
 
-                        {/* Edit Button */}
-                        <Link
-                          href={`/admin/content/${item.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 bg-blue-50 rounded"
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 sm:flex-shrink-0">
+                      {item.status === 'DRAFT' && (
+                        <button
+                          onClick={() => handleReviewClick(item)}
+                          className="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors"
                         >
-                          Edit
+                          Send to Review
+                        </button>
+                      )}
+                      {item.status === 'REVIEW' && (
+                        <button
+                          onClick={() => handleReviewClick(item)}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                        >
+                          Review
+                        </button>
+                      )}
+                      {item.status === 'PUBLISHED' && (
+                        <Link
+                          href={`/articles/${item.slug}`}
+                          target="_blank"
+                          className="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="View Live"
+                        >
+                          <ArrowTopRightOnSquareIcon className="w-4 h-4" />
                         </Link>
-
-                        {/* Delete Button */}
-                        <DeleteButton
-                          action={`/api/admin/content/${item.id}/delete`}
-                          itemName="content"
-                          className="text-red-600 hover:text-red-900 text-xs px-2 py-1 bg-red-50 rounded"
-                        />
-                      </div>
+                      )}
+                      <Link
+                        href={`/admin/content/${item.id}/edit`}
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </Link>
+                      <DeleteButton
+                        action={`/api/admin/content/${item.id}/delete`}
+                        itemName="content"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      />
                     </div>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
-
-          {content.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No content found.</p>
+              ))}
             </div>
           )}
         </div>

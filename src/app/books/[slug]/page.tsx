@@ -3,13 +3,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { PublicLayout } from '@/components/layout/PublicLayout';
 import { ContentViewer } from '@/components/content/ContentViewer';
 import { ContentGrid } from '@/components/content/ContentGrid';
 import { ContentSkeleton } from '@/components/content/ContentSkeleton';
+import { useImpressionTracker } from '@/hooks/useImpressionTracker';
 
 export default function BookPage() {
   const params = useParams();
   const slug = params.slug as string;
+
+  // Track content impressions
+  useImpressionTracker({ slug, enabled: !!slug });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['content', slug],
@@ -24,35 +29,40 @@ export default function BookPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <ContentSkeleton count={1} compact={true} />
+      <PublicLayout>
+        <div className="min-h-screen">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <ContentSkeleton count={1} compact={true} />
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Book Not Found</h1>
-          <p className="text-gray-600 mb-6">The book you're looking for doesn't exist or has been moved.</p>
-          <Link
-            href="/books"
-            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-          >
-            Browse Books
-          </Link>
+      <PublicLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Book Not Found</h1>
+            <p className="text-gray-600 mb-6">The book you're looking for doesn't exist or has been moved.</p>
+            <Link
+              href="/books"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            >
+              Browse Books
+            </Link>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     );
   }
 
   const { content, related } = data;
 
   return (
-    <div className="min-h-screen">
+    <PublicLayout>
+      <div className="min-h-screen">
       {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -105,6 +115,7 @@ export default function BookPage() {
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </PublicLayout>
   );
 }

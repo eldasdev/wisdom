@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
+import { PdfUploader } from '@/components/PdfUploader';
 
 type ContentType = 'ARTICLE' | 'CASE_STUDY' | 'BOOK' | 'BOOK_CHAPTER' | 'TEACHING_NOTE';
 
@@ -15,6 +16,9 @@ interface ContentFormData {
   type: ContentType;
   tags: string[];
   status: string;
+  // PDF file
+  pdfUrl?: string;
+  pdfFileName?: string;
   // Type-specific fields
   category?: string;
   industry?: string;
@@ -48,6 +52,8 @@ export default function EditContentPage() {
     status: 'DRAFT',
   });
 
+  const [tagsInput, setTagsInput] = useState('');
+
   useEffect(() => {
     fetchContent();
   }, [contentId]);
@@ -71,6 +77,9 @@ export default function EditContentPage() {
         type: content.type,
         tags: content.tags.map((ct: any) => ct.tag.name),
         status: content.status,
+        // PDF fields
+        pdfUrl: content.pdfUrl || undefined,
+        pdfFileName: content.pdfFileName || undefined,
         // Extract metadata fields
         category: metadata.category,
         industry: metadata.industry,
@@ -108,12 +117,18 @@ export default function EditContentPage() {
   };
 
   const handleTagsChange = (tagsString: string) => {
+    setTagsInput(tagsString);
     const tags = tagsString
       .split(',')
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
     setFormData(prev => ({ ...prev, tags }));
   };
+
+  // Sync tags input with form data
+  useEffect(() => {
+    setTagsInput(formData.tags.join(', '));
+  }, [formData.tags]);
 
   const handleLearningObjectivesChange = (objectivesString: string) => {
     const learningObjectives = objectivesString
@@ -166,6 +181,8 @@ export default function EditContentPage() {
           description: formData.description,
           content: formData.content,
           tags: formData.tags,
+          pdfUrl: formData.pdfUrl,
+          pdfFileName: formData.pdfFileName,
           metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
         }),
       });
@@ -335,7 +352,7 @@ export default function EditContentPage() {
             </label>
             <input
               type="text"
-              value={formData.tags.join(', ')}
+              value={tagsInput}
               onChange={(e) => handleTagsChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -451,6 +468,24 @@ export default function EditContentPage() {
             onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
             placeholder="Write your content here..."
             className="min-h-[400px]"
+          />
+        </div>
+
+        {/* PDF Upload */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">PDF Document</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Upload a PDF file for this content. This will be displayed to users with a built-in viewer.
+          </p>
+          <PdfUploader
+            currentPdfUrl={formData.pdfUrl}
+            currentPdfFileName={formData.pdfFileName}
+            onUploadComplete={(url, fileName) => {
+              setFormData(prev => ({ ...prev, pdfUrl: url || undefined, pdfFileName: fileName || undefined }));
+            }}
+            onUploadError={(errorMsg) => {
+              console.error('PDF upload error:', errorMsg);
+            }}
           />
         </div>
 

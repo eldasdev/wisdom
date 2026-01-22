@@ -1,11 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Article } from '@/lib/types';
+import dynamic from 'next/dynamic';
+import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
+import { ArrowDownTrayIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
+
+// Dynamically import PdfViewer to avoid SSR issues with react-pdf
+const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  ),
+});
 
 interface ArticleViewProps {
-  content: Article;
+  content: SerializableContent;
   relatedContent?: any[];
 }
 
@@ -101,6 +113,29 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
           {content.description}
         </p>
 
+        {/* PDF Action Buttons */}
+        {content.pdfUrl && (
+          <div className="mb-8 flex flex-wrap gap-4">
+            <a
+              href={content.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              <EyeIcon className="w-5 h-5" />
+              View PDF
+            </a>
+            <a
+              href={content.pdfUrl}
+              download={content.pdfFileName || 'document.pdf'}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              <ArrowDownTrayIcon className="w-5 h-5" />
+              Download PDF
+            </a>
+          </div>
+        )}
+
         {/* Author & Meta */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 border-t border-b border-gray-200">
           <div className="flex items-center space-x-4">
@@ -151,12 +186,48 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
       </header>
 
       {/* Article Content */}
-      <div className="prose prose-lg prose-gray max-w-none mb-12">
-        <div
-          dangerouslySetInnerHTML={{ __html: content.content }}
-          className="leading-relaxed"
-        />
+      <div className="max-w-4xl mx-auto mb-12">
+        <div className="bg-white rounded-lg p-8 sm:p-12">
+          <div 
+            className="text-gray-900 text-lg leading-relaxed prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: content.content }}
+          />
+        </div>
       </div>
+
+      {/* PDF Document Section */}
+      {content.pdfUrl && (
+        <div className="mb-12 bg-white rounded-2xl border-2 border-blue-200 shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <DocumentTextIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">PDF Document</h3>
+                <p className="text-sm text-blue-100">
+                  {content.pdfFileName || 'View and download the full document'}
+                </p>
+              </div>
+            </div>
+            <a
+              href={content.pdfUrl}
+              download={content.pdfFileName || 'document.pdf'}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-600 bg-white rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <ArrowDownTrayIcon className="w-5 h-5" />
+              Download PDF
+            </a>
+          </div>
+          <div className="p-6">
+            <PdfViewer 
+              pdfUrl={content.pdfUrl} 
+              fileName={content.pdfFileName || undefined}
+              className="rounded-lg"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Tags */}
       {content.tags && Array.isArray(content.tags) && content.tags.length > 0 && (
@@ -165,8 +236,8 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
             {content.tags.map((tag) => (
               <Link
                 key={tag}
-                href={`/search?q=${encodeURIComponent(tag)}`}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors cursor-pointer"
               >
                 #{tag}
               </Link>

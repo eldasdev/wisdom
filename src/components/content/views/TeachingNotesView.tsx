@@ -1,11 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { TeachingNote } from '@/lib/types';
+import dynamic from 'next/dynamic';
+import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
+import {
+  ClipboardDocumentListIcon,
+  BookOpenIcon,
+  LightBulbIcon,
+  AcademicCapIcon,
+  DocumentTextIcon,
+  ArrowDownTrayIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
+
+// Dynamically import PdfViewer to avoid SSR issues with react-pdf
+const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  ),
+});
 
 interface TeachingNotesViewProps {
-  content: TeachingNote;
+  content: SerializableContent;
   relatedContent?: any[];
 }
 
@@ -28,10 +48,10 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
   };
 
   const sections = [
-    { id: 'overview', label: 'Overview', icon: '📋' },
-    { id: 'materials', label: 'Teaching Materials', icon: '📚' },
-    { id: 'objectives', label: 'Learning Objectives', icon: '🎯' },
-    { id: 'activities', label: 'Class Activities', icon: '🎓' },
+    { id: 'overview', label: 'Overview', icon: ClipboardDocumentListIcon },
+    { id: 'materials', label: 'Teaching Materials', icon: BookOpenIcon },
+    { id: 'objectives', label: 'Learning Objectives', icon: LightBulbIcon },
+    { id: 'activities', label: 'Class Activities', icon: AcademicCapIcon },
   ];
 
   return (
@@ -73,6 +93,29 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
           <p className="text-lg text-gray-700 mb-6 max-w-4xl">
             {content.description}
           </p>
+
+          {/* PDF Action Buttons */}
+          {content.pdfUrl && (
+            <div className="mb-6 flex flex-wrap gap-4">
+              <a
+                href={content.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <EyeIcon className="w-5 h-5" />
+                View PDF
+              </a>
+              <a
+                href={content.pdfUrl}
+                download={content.pdfFileName || 'teaching-notes.pdf'}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-cyan-600 font-semibold rounded-xl border-2 border-cyan-600 hover:bg-cyan-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download PDF
+              </a>
+            </div>
+          )}
 
           {/* Related Content Info */}
           {content.relatedContentId && (
@@ -147,7 +190,7 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <span>{section.icon}</span>
+                  <section.icon className="w-5 h-5" />
                   <span>{section.label}</span>
                 </button>
               ))}
@@ -156,11 +199,13 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
 
           <div className="p-8">
             {activeSection === 'overview' && (
-              <div className="prose prose-lg prose-blue max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{ __html: content.content }}
-                  className="leading-relaxed"
-                />
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-lg p-8 sm:p-12">
+                  <div 
+                    className="text-gray-900 text-lg leading-relaxed prose prose-lg max-w-none"
+                    dangerouslySetInnerHTML={{ __html: content.content }}
+                  />
+                </div>
 
                 {/* Quick Access Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -170,7 +215,7 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
                   >
                     <div className="flex items-center space-x-3 mb-3">
                       <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <span className="text-white">🎯</span>
+                        <LightBulbIcon className="w-6 h-6 text-white" />
                       </div>
                       <h3 className="text-lg font-semibold text-blue-900">Learning Objectives</h3>
                     </div>
@@ -185,7 +230,7 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
                   >
                     <div className="flex items-center space-x-3 mb-3">
                       <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                        <span className="text-white">📚</span>
+                        <BookOpenIcon className="w-6 h-6 text-white" />
                       </div>
                       <h3 className="text-lg font-semibold text-green-900">Teaching Materials</h3>
                     </div>
@@ -398,7 +443,7 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
                   <div className="border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">📊</span>
+                        <ClipboardDocumentListIcon className="w-8 h-8 text-purple-600" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900">Case Analysis</h4>
@@ -419,6 +464,40 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
             )}
           </div>
         </div>
+
+        {/* PDF Document Section */}
+        {content.pdfUrl && (
+          <div className="bg-white rounded-2xl border-2 border-cyan-200 shadow-lg overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <DocumentTextIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Teaching Notes Document</h3>
+                  <p className="text-sm text-cyan-100">
+                    {content.pdfFileName || 'View and download the full teaching notes'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={content.pdfUrl}
+                download={content.pdfFileName || 'teaching-notes.pdf'}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-cyan-600 bg-white rounded-xl hover:bg-cyan-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download PDF
+              </a>
+            </div>
+            <div className="p-6">
+              <PdfViewer 
+                pdfUrl={content.pdfUrl} 
+                fileName={content.pdfFileName || undefined}
+                className="rounded-lg"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Related Teaching Materials */}
         {relatedContent && relatedContent.length > 0 && (

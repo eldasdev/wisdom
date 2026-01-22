@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
+import { PdfUploader } from '@/components/PdfUploader';
 
 type ContentType = 'ARTICLE' | 'CASE_STUDY' | 'BOOK' | 'BOOK_CHAPTER' | 'TEACHING_NOTE';
 
@@ -14,10 +15,19 @@ interface ContentFormData {
   content: string;
   type: ContentType;
   tags: string[];
+  // PDF file
+  pdfUrl?: string;
+  pdfFileName?: string;
+  // Common metadata fields
+  industry?: string;
+  company?: string;
+  sector?: string;
+  region?: string;
+  country?: string;
+  category?: string;
+  topic?: string;
+  subject?: string;
   // Type-specific fields
-  category?: string; // For articles
-  industry?: string; // For case studies
-  company?: string; // For case studies
   isbn?: string; // For books
   publisher?: string; // For books
   pages?: number; // For books
@@ -40,6 +50,8 @@ export default function CreateContentPage() {
     type: 'ARTICLE',
     tags: [],
   });
+
+  const [tagsInput, setTagsInput] = useState('');
 
   const contentTypes = [
     { value: 'ARTICLE', label: 'Article', description: 'Research articles and insights' },
@@ -65,12 +77,18 @@ export default function CreateContentPage() {
   };
 
   const handleTagsChange = (tagsString: string) => {
+    setTagsInput(tagsString);
     const tags = tagsString
       .split(',')
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
     setFormData(prev => ({ ...prev, tags }));
   };
+
+  // Sync tags input with form data
+  useEffect(() => {
+    setTagsInput(formData.tags.join(', '));
+  }, [formData.tags]);
 
   const handleLearningObjectivesChange = (objectivesString: string) => {
     const learningObjectives = objectivesString
@@ -91,14 +109,21 @@ export default function CreateContentPage() {
         throw new Error('Please fill in all required fields');
       }
 
-      // Prepare metadata based on content type
+      // Prepare metadata
       const metadata: any = {};
-      if (formData.type === 'ARTICLE' && formData.category) {
-        metadata.category = formData.category;
-      }
+
+      // Common metadata fields
+      if (formData.industry) metadata.industry = formData.industry;
+      if (formData.company) metadata.company = formData.company;
+      if (formData.sector) metadata.sector = formData.sector;
+      if (formData.region) metadata.region = formData.region;
+      if (formData.country) metadata.country = formData.country;
+      if (formData.category) metadata.category = formData.category;
+      if (formData.topic) metadata.topic = formData.topic;
+      if (formData.subject) metadata.subject = formData.subject;
+
+      // Type-specific fields
       if (formData.type === 'CASE_STUDY') {
-        if (formData.industry) metadata.industry = formData.industry;
-        if (formData.company) metadata.company = formData.company;
         if (formData.learningObjectives) metadata.learningObjectives = formData.learningObjectives;
       }
       if (formData.type === 'BOOK') {
@@ -411,7 +436,7 @@ export default function CreateContentPage() {
             </label>
             <input
               type="text"
-              value={formData.tags.join(', ')}
+              value={tagsInput}
               onChange={(e) => handleTagsChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="strategy, leadership, innovation (comma-separated)"
@@ -443,6 +468,24 @@ export default function CreateContentPage() {
           />
           <p className="text-xs text-gray-500 mt-2">
             Use the toolbar above to format your content. Supports headings, lists, bold, italic, and more.
+          </p>
+        </div>
+
+        {/* PDF Upload */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">PDF Document (Optional)</h2>
+          <PdfUploader
+            currentPdfUrl={formData.pdfUrl}
+            currentPdfFileName={formData.pdfFileName}
+            onUploadComplete={(url, fileName) => {
+              setFormData(prev => ({ ...prev, pdfUrl: url || undefined, pdfFileName: fileName || undefined }));
+            }}
+            onUploadError={(errorMsg) => {
+              setError(errorMsg);
+            }}
+          />
+          <p className="text-xs text-gray-500 mt-3">
+            Upload a PDF version of your content. This will be available for viewing and download on the content page.
           </p>
         </div>
 
