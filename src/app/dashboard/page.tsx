@@ -113,8 +113,8 @@ export default async function AuthorDashboard() {
         </Link>
       </div>
 
-      {/* Stats Grid - EXACTLY like admin */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stats Grid - 2 columns on mobile */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
         {stats.map((stat) => (
           <div
             key={stat.title}
