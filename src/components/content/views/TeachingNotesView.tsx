@@ -127,7 +127,7 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
                 <div>
                   <span className="font-medium text-blue-900">Related Content:</span>
                   <span className="ml-2 text-blue-800">
-                    {content.relatedContentType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {content.relatedContentType?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'N/A'}
                   </span>
                 </div>
               </div>

@@ -17,7 +17,7 @@ export const mockBooks: Book[] = [
     publisher: 'Free Press',
     pages: 416,
     edition: 1,
-    chapters: ['five-forces-analysis-chapter'],
+    chapters: [], // References to book chapters by ID
     content: `# Competitive Strategy
 
 ## The Structural Analysis of Industries
@@ -104,7 +104,7 @@ Published in 1980, Competitive Strategy remains one of the most influential busi
     publisher: 'Harvard Business Review Press',
     pages: 336,
     edition: 1,
-    chapters: ['disruptive-innovation-theory-chapter'],
+    chapters: [], // References to book chapters by ID
     content: `# The Innovator\'s Dilemma
 
 ## Why Great Companies Fail

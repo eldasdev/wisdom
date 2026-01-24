@@ -9,9 +9,10 @@ import {
   MagnifyingGlassPlusIcon,
   MagnifyingGlassMinusIcon,
   ArrowsPointingOutIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 
-// Import CSS for react-pdf (v7+ paths)
+// Import CSS for react-pdf
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -25,9 +26,15 @@ interface PdfViewerProps {
   pdfUrl: string;
   fileName?: string;
   className?: string;
+  showOpenInNewTab?: boolean;
 }
 
-export function PdfViewer({ pdfUrl, fileName, className = '' }: PdfViewerProps) {
+export function PdfViewer({ 
+  pdfUrl, 
+  fileName, 
+  className = '',
+  showOpenInNewTab = true,
+}: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
@@ -40,8 +47,8 @@ export function PdfViewer({ pdfUrl, fileName, className = '' }: PdfViewerProps) 
     setError(null);
   };
 
-  const onDocumentLoadError = (error: Error) => {
-    console.error('PDF load error:', error);
+  const onDocumentLoadError = (err: Error) => {
+    console.error('PDF load error:', err);
     setError('Failed to load PDF document');
     setLoading(false);
   };
@@ -76,10 +83,14 @@ export function PdfViewer({ pdfUrl, fileName, className = '' }: PdfViewerProps) 
     document.body.removeChild(link);
   };
 
+  const handleOpenInNewTab = () => {
+    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className={`bg-gray-100 rounded-lg overflow-hidden ${className}`}>
       {/* Toolbar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           {/* Page Navigation */}
           <button
@@ -137,13 +148,27 @@ export function PdfViewer({ pdfUrl, fileName, className = '' }: PdfViewerProps) 
             <ArrowsPointingOutIcon className="w-5 h-5" />
           </button>
 
+          <div className="h-6 w-px bg-gray-300 mx-1" />
+
+          {/* Open in New Tab */}
+          {showOpenInNewTab && (
+            <button
+              onClick={handleOpenInNewTab}
+              className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 text-sm rounded transition-colors"
+              title="Open in new tab"
+            >
+              <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">View</span>
+            </button>
+          )}
+
           {/* Download Button */}
           <button
             onClick={handleDownload}
             className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
-            Download
+            <span className="hidden sm:inline">Download</span>
           </button>
         </div>
       </div>
@@ -160,13 +185,22 @@ export function PdfViewer({ pdfUrl, fileName, className = '' }: PdfViewerProps) 
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <p className="text-lg font-medium">Unable to display PDF</p>
             <p className="text-sm mt-2">{error}</p>
-            <button
-              onClick={handleDownload}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-              Download PDF instead
-            </button>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleOpenInNewTab}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+              >
+                <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                Open in browser
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                <ArrowDownTrayIcon className="w-4 h-4" />
+                Download PDF
+              </button>
+            </div>
           </div>
         )}
 

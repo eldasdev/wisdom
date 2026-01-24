@@ -52,7 +52,7 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
   };
 
   // Sort and filter items
-  const sortedAndFilteredItems = content.items
+  const sortedAndFilteredItems = (content.items || [])
     .filter(item => filterType === 'all' || item.contentType === filterType)
     .sort((a, b) => {
       switch (sortBy) {
@@ -82,7 +82,7 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
     return `/${urlPath}/${slug}`;
   };
 
-  const typeCounts = content.items.reduce((acc, item) => {
+  const typeCounts = (content.items || []).reduce((acc, item) => {
     acc[item.contentType] = (acc[item.contentType] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -117,7 +117,7 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
               {/* Collection Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-indigo-600">{content.items.length}</div>
+                  <div className="text-3xl font-bold text-indigo-600">{(content.items || []).length}</div>
                   <div className="text-sm text-gray-600">Items</div>
                 </div>
                 <div className="text-center">
@@ -198,7 +198,7 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
                   onChange={(e) => setFilterType(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="all">All Types ({content.items.length})</option>
+                  <option value="all">All Types ({(content.items || []).length})</option>
                   {Object.entries(typeCounts).map(([type, count]) => (
                     <option key={type} value={type}>
                       {getTypeLabel(type)} ({count})
@@ -223,7 +223,7 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing {sortedAndFilteredItems.length} of {content.items.length} items
+              Showing {sortedAndFilteredItems.length} of {(content.items || []).length} items
             </div>
           </div>
         </div>

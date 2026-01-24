@@ -1,20 +1,23 @@
 import { ContentType, SearchFilters, PaginatedResponse, SerializableContent } from '../types';
 import { prisma } from '../prisma';
+import { ContentType as PrismaContentType } from '@prisma/client';
 
 // Serialization utility to convert Date objects to ISO strings
-function serializeContent<T extends any | any[]>(content: T): T extends any[] ? SerializableContent[] : SerializableContent {
+function serializeContent(content: unknown[]): SerializableContent[];
+function serializeContent(content: unknown): SerializableContent;
+function serializeContent(content: unknown | unknown[]): SerializableContent | SerializableContent[] {
   if (Array.isArray(content)) {
-    return content.map(item => serializeContent(item)) as T extends any[] ? SerializableContent[] : never;
+    return content.map(item => serializeContent(item as unknown)) as SerializableContent[];
   }
 
-  const serialized = { ...content } as any;
+  const serialized = { ...(content as object) } as Record<string, unknown>;
   if (serialized.publishedAt instanceof Date) {
     serialized.publishedAt = serialized.publishedAt.toISOString();
   }
   if (serialized.updatedAt instanceof Date) {
     serialized.updatedAt = serialized.updatedAt.toISOString();
   }
-  return serialized;
+  return serialized as unknown as SerializableContent;
 }
 
 // Data access functions
@@ -90,17 +93,17 @@ export class ContentDataLayer {
   // Get content by type
   static async getByType(type: string): Promise<SerializableContent[]> {
     // Convert URL parameter (case-study) to enum format (CASE_STUDY)
-    const normalizedType = type.toUpperCase().replace(/-/g, '_') as ContentType;
+    const normalizedType = type.toUpperCase().replace(/-/g, '_');
 
     // Validate that it's a valid ContentType
-    const validTypes: ContentType[] = ['ARTICLE', 'CASE_STUDY', 'BOOK', 'BOOK_CHAPTER', 'TEACHING_NOTE', 'COLLECTION'];
+    const validTypes = ['ARTICLE', 'CASE_STUDY', 'BOOK', 'BOOK_CHAPTER', 'TEACHING_NOTE', 'COLLECTION'];
     if (!validTypes.includes(normalizedType)) {
       throw new Error(`Invalid content type: ${type}`);
     }
 
     const content = await prisma.content.findMany({
       where: {
-        type: normalizedType,
+        type: normalizedType as PrismaContentType,
         status: 'PUBLISHED'
       },
       include: {

@@ -4,7 +4,15 @@ export interface Author {
   title?: string;
   institution?: string;
   bio?: string;
+  email?: string;
+  orcid?: string;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  image?: string;
 }
+
+export type ContentStatus = 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface ContentBase {
   id: string;
@@ -17,6 +25,7 @@ export interface ContentBase {
   tags: string[];
   featured: boolean;
   content: string;
+  status?: ContentStatus;
   // View/Impression tracking
   viewCount?: number;
   // PDF document (optional)
@@ -97,6 +106,36 @@ export interface SerializableContent extends Omit<ContentBase, 'publishedAt' | '
   type: ContentType;
   publishedAt: string; // ISO string
   updatedAt?: string; // ISO string
+  // Type-specific properties (from metadata)
+  // Article
+  category?: string;
+  readTime?: number;
+  wordCount?: number;
+  // Case Study
+  industry?: string;
+  company?: string;
+  teachingNotes?: string;
+  learningObjectives?: string[];
+  // Book
+  isbn?: string;
+  publisher?: string;
+  pages?: number;
+  edition?: number;
+  chapters?: SerializableContent[];
+  // Book Chapter
+  bookId?: string;
+  chapterNumber?: number;
+  pageRange?: string;
+  // Teaching Note
+  relatedContentId?: string;
+  relatedContentType?: string;
+  objectives?: string[];
+  materials?: string[];
+  duration?: number;
+  // Collection
+  curator?: Author;
+  items?: CollectionItem[];
+  theme?: string;
 }
 
 export type ContentType = Content['type'];

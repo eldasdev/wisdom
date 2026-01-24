@@ -94,14 +94,16 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
       {/* Header */}
       <header className="mb-12">
         {/* Category */}
-        <div className="mb-6">
-          <Link
-            href={`/articles?categories=${encodeURIComponent(content.category)}`}
-            className="inline-block px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
-          >
-            {content.category}
-          </Link>
-        </div>
+        {content.category && (
+          <div className="mb-6">
+            <Link
+              href={`/articles?categories=${encodeURIComponent(content.category)}`}
+              className="inline-block px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+            >
+              {content.category}
+            </Link>
+          </div>
+        )}
 
         {/* Title */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">

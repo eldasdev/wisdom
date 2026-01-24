@@ -1,4 +1,5 @@
-import { SerializableContent } from '@/lib/types';
+import Link from 'next/link';
+import { SerializableContent, Content } from '@/lib/types';
 import { ArticleView } from './views/ArticleView';
 import { CaseStudyView } from './views/CaseStudyView';
 import { BookView } from './views/BookView';
@@ -136,7 +137,7 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
             )}
             {content.type === 'article' && 'readTime' in content && (
               <div className="text-sm text-gray-500">
-                {content.readTime} min read
+                {(content as { readTime: number }).readTime} min read
               </div>
             )}
           </div>
@@ -249,9 +250,11 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
               <div>
                 <span className="font-medium text-blue-800">Duration:</span> {content.duration} minutes
               </div>
-              <div>
-                <span className="font-medium text-blue-800">Related Content:</span> {content.relatedContentType.replace('-', ' ')}
-              </div>
+              {content.relatedContentType && (
+                <div>
+                  <span className="font-medium text-blue-800">Related Content:</span> {content.relatedContentType.replace('-', ' ')}
+                </div>
+              )}
               {content.objectives && Array.isArray(content.objectives) && content.objectives.length > 0 && (
                 <div className="md:col-span-2">
                   <span className="font-medium text-blue-800">Objectives:</span>

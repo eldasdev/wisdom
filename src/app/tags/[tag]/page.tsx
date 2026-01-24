@@ -165,10 +165,10 @@ export default function TagPage() {
               >
                 <option value="all">All Content ({contentData?.total || 0})</option>
                 {Object.entries(tagData.contentTypes)
-                  .filter(([_, count]) => count > 0)
+                  .filter(([, count]) => (count as number) > 0)
                   .map(([type, count]) => (
                     <option key={type} value={type}>
-                      {contentTypeLabels[type as keyof typeof contentTypeLabels]} ({typeof count === 'number' ? count : 0})
+                      {contentTypeLabels[type as keyof typeof contentTypeLabels]} ({count as number})
                     </option>
                   ))}
               </select>

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Content } from '@/lib/types';
-import { ContentStatus } from '@prisma/client';
+import { Content, ContentStatus } from '@/lib/types';
 
 interface ContentReviewModalProps {
   content: Content | null;
@@ -48,7 +47,7 @@ export function ContentReviewModal({
     }
   };
 
-  const getStatusColor = (status: ContentStatus) => {
+  const getStatusColor = (status: ContentStatus | undefined) => {
     switch (status) {
       case 'DRAFT':
         return 'bg-gray-100 text-gray-800';
@@ -91,7 +90,7 @@ export function ContentReviewModal({
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-semibold text-gray-900">{content.title}</h4>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(content.status)}`}>
-                {content.status}
+                {content.status || 'DRAFT'}
               </span>
             </div>
 

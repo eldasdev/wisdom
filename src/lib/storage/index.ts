@@ -1,14 +1,12 @@
 /**
  * Storage abstraction layer for file uploads
- * Supports local storage (dev) and AWS S3 (production)
+ * Currently supports local storage for development
+ * Can be extended to support cloud storage (Vercel Blob, Uploadthing, etc.)
  */
 
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
-
-// Storage provider type
-export type StorageProvider = 'local' | 's3';
 
 // Upload result interface
 export interface UploadResult {
@@ -18,17 +16,8 @@ export interface UploadResult {
   mimeType: string;
 }
 
-// Storage configuration
-const config = {
-  provider: (process.env.STORAGE_PROVIDER || 'local') as StorageProvider,
-  // Local storage config
-  localUploadDir: process.env.LOCAL_UPLOAD_DIR || 'public/uploads',
-  // S3 config
-  s3Bucket: process.env.S3_BUCKET || '',
-  s3Region: process.env.S3_REGION || 'us-east-1',
-  s3AccessKey: process.env.AWS_ACCESS_KEY_ID || '',
-  s3SecretKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-};
+// Configuration
+const LOCAL_UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || 'public/uploads';
 
 /**
  * Validate PDF file
@@ -74,8 +63,12 @@ export function generateUniqueFileName(originalName: string): string {
 /**
  * Upload file to local storage
  */
-async function uploadToLocal(buffer: Buffer, fileName: string, subDir: string = 'pdfs'): Promise<UploadResult> {
-  const uploadDir = path.join(process.cwd(), config.localUploadDir, subDir);
+export async function uploadFile(
+  buffer: Buffer,
+  fileName: string,
+  subDir: string = 'pdfs'
+): Promise<UploadResult> {
+  const uploadDir = path.join(process.cwd(), LOCAL_UPLOAD_DIR, subDir);
   
   // Create directory if it doesn't exist
   if (!existsSync(uploadDir)) {
@@ -88,7 +81,7 @@ async function uploadToLocal(buffer: Buffer, fileName: string, subDir: string = 
   await writeFile(filePath, buffer);
 
   // Return public URL
-  const url = `/${config.localUploadDir}/${subDir}/${uniqueFileName}`.replace('public/', '');
+  const url = `/${LOCAL_UPLOAD_DIR}/${subDir}/${uniqueFileName}`.replace('public/', '');
 
   return {
     url,
@@ -96,60 +89,6 @@ async function uploadToLocal(buffer: Buffer, fileName: string, subDir: string = 
     size: buffer.length,
     mimeType: 'application/pdf',
   };
-}
-
-/**
- * Upload file to AWS S3
- */
-async function uploadToS3(buffer: Buffer, fileName: string, subDir: string = 'pdfs'): Promise<UploadResult> {
-  // Dynamic import to avoid loading AWS SDK when not needed
-  const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
-
-  const client = new S3Client({
-    region: config.s3Region,
-    credentials: {
-      accessKeyId: config.s3AccessKey,
-      secretAccessKey: config.s3SecretKey,
-    },
-  });
-
-  const uniqueFileName = generateUniqueFileName(fileName);
-  const key = `${subDir}/${uniqueFileName}`;
-
-  const command = new PutObjectCommand({
-    Bucket: config.s3Bucket,
-    Key: key,
-    Body: buffer,
-    ContentType: 'application/pdf',
-    // Public read access for academic content
-    ACL: 'public-read',
-  });
-
-  await client.send(command);
-
-  // Construct public URL
-  const url = `https://${config.s3Bucket}.s3.${config.s3Region}.amazonaws.com/${key}`;
-
-  return {
-    url,
-    fileName: uniqueFileName,
-    size: buffer.length,
-    mimeType: 'application/pdf',
-  };
-}
-
-/**
- * Upload file using configured provider
- */
-export async function uploadFile(
-  buffer: Buffer,
-  fileName: string,
-  subDir: string = 'pdfs'
-): Promise<UploadResult> {
-  if (config.provider === 's3' && config.s3Bucket) {
-    return uploadToS3(buffer, fileName, subDir);
-  }
-  return uploadToLocal(buffer, fileName, subDir);
 }
 
 /**
@@ -157,40 +96,22 @@ export async function uploadFile(
  */
 export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    if (config.provider === 's3' && config.s3Bucket) {
-      const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
-      
-      const client = new S3Client({
-        region: config.s3Region,
-        credentials: {
-          accessKeyId: config.s3AccessKey,
-          secretAccessKey: config.s3SecretKey,
-        },
-      });
-
-      // Extract key from URL
-      const urlParts = fileUrl.split('.amazonaws.com/');
-      if (urlParts.length < 2) return false;
-      
-      const key = urlParts[1];
-      const command = new DeleteObjectCommand({
-        Bucket: config.s3Bucket,
-        Key: key,
-      });
-
-      await client.send(command);
+    const filePath = path.join(process.cwd(), 'public', fileUrl);
+    if (existsSync(filePath)) {
+      await unlink(filePath);
       return true;
-    } else {
-      // Local deletion
-      const filePath = path.join(process.cwd(), 'public', fileUrl);
-      if (existsSync(filePath)) {
-        await unlink(filePath);
-        return true;
-      }
     }
     return false;
   } catch (error) {
     console.error('Error deleting file:', error);
     return false;
   }
+}
+
+/**
+ * Check if a file exists
+ */
+export function fileExists(fileUrl: string): boolean {
+  const filePath = path.join(process.cwd(), 'public', fileUrl);
+  return existsSync(filePath);
 }
