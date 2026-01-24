@@ -46,32 +46,32 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Global Header - hidden on mobile for dashboard */}
-      <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
+      {/* Global Header - always visible */}
+      <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
       
-      {/* Spacer for global header - only on desktop */}
-      <div className="hidden lg:block h-16"></div>
+      {/* Spacer for global header */}
+      <div className="h-16"></div>
       
-      {/* Dashboard Header */}
-      <header className="fixed top-0 lg:top-16 left-0 right-0 z-40 h-14 lg:h-16 bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg">
-        <div className="h-full px-3 sm:px-4 lg:px-8">
+      {/* Dashboard Header - hidden on mobile (we have bottom nav), visible on desktop */}
+      <header className="hidden lg:block fixed top-16 left-0 right-0 z-40 h-16 bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg">
+        <div className="h-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-full">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Link href="/dashboard" className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <BookOpenIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="flex items-center space-x-4">
+              <Link href="/dashboard" className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <BookOpenIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <span className="text-base sm:text-lg font-bold text-white">Wisdom</span>
-                  <span className="text-[10px] sm:text-xs text-white/60 block -mt-1">Author Dashboard</span>
+                  <span className="text-lg font-bold text-white">Wisdom</span>
+                  <span className="text-xs text-white/60 block -mt-1">Author Dashboard</span>
                 </div>
               </Link>
             </div>
             
-            <div className="flex items-center space-x-1 sm:space-x-3">
-              <div className="hidden md:flex items-center px-3 py-1.5 bg-white/10 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center px-3 py-1.5 bg-white/10 rounded-lg">
                 <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
                   {session.user.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
@@ -80,32 +80,29 @@ export default async function DashboardLayout({
               
               <Link
                 href="/"
-                className="flex items-center p-2 sm:px-3 sm:py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
-                title="View Site"
+                className="flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
               >
-                <HomeIcon className="w-4 h-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Site</span>
+                <HomeIcon className="w-4 h-4 mr-1.5" />
+                View Site
               </Link>
 
               {session.user.role === 'ADMIN' && (
                 <Link
                   href="/admin"
-                  className="flex items-center p-2 sm:px-3 sm:py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
-                  title="Admin Panel"
+                  className="flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
                 >
-                  <ShieldCheckIcon className="w-4 h-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Admin</span>
+                  <ShieldCheckIcon className="w-4 h-4 mr-1.5" />
+                  Admin
                 </Link>
               )}
               
               <form action="/api/auth/signout" method="POST">
                 <button
                   type="submit"
-                  className="flex items-center p-2 sm:px-3 sm:py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
-                  title="Sign Out"
+                  className="flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
                 >
-                  <ArrowRightOnRectangleIcon className="w-4 h-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Sign Out</span>
+                  <ArrowRightOnRectangleIcon className="w-4 h-4 mr-1.5" />
+                  Sign Out
                 </button>
               </form>
             </div>
@@ -113,12 +110,12 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      {/* Spacer for dashboard header */}
-      <div className="h-14 lg:h-16"></div>
+      {/* Spacer for dashboard header - only on desktop */}
+      <div className="hidden lg:block h-16"></div>
 
       <div className="flex">
-        {/* Fixed Sidebar - starts after both headers (16+16=32 on desktop) */}
-        <aside className="hidden lg:block w-64 fixed top-32 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-sm overflow-y-auto" style={{ top: 'calc(4rem + 4rem)' }}>
+        {/* Fixed Sidebar - starts after both headers on desktop (16+16=32rem = 8rem) */}
+        <aside className="hidden lg:block w-64 fixed top-32 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
           <div className="flex flex-col h-full">
             <nav className="flex-1 px-4 py-6 space-y-1">
               <div className="mb-4">
@@ -221,9 +218,9 @@ export default async function DashboardLayout({
           </div>
         </div>
 
-        {/* Main Content - with left margin for sidebar */}
+        {/* Main Content - with left margin for sidebar on desktop */}
         <main className="flex-1 lg:ml-64">
-          <div className="py-4 sm:py-6 px-3 sm:px-6 lg:px-8 pb-20 lg:pb-6">
+          <div className="py-4 sm:py-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-6">
             {children}
           </div>
         </main>
