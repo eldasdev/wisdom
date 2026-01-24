@@ -30,16 +30,16 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Global Header - hidden on mobile for admin */}
-      <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
+      {/* Global Header - always visible */}
+      <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
       
-      {/* Spacer for global header - only on desktop */}
-      <div className="hidden lg:block h-16"></div>
+      {/* Spacer for global header */}
+      <div className="h-16"></div>
       
-      {/* Admin Panel Header */}
-      <header className="fixed top-0 lg:top-16 left-0 right-0 z-40 h-14 lg:h-16 bg-gradient-to-r from-[#0C2C55] to-slate-800 shadow-lg">
+      {/* Admin Panel Header - hidden on mobile (we have bottom nav), visible on desktop */}
+      <header className="hidden lg:block fixed top-16 left-0 right-0 z-40 h-16 bg-gradient-to-r from-[#0C2C55] to-slate-800 shadow-lg">
         <div className="h-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-full">
             <div className="flex items-center space-x-4">
@@ -55,7 +55,7 @@ export default async function AdminLayout({
             </div>
             
             <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center px-3 py-1.5 bg-white/10 rounded-lg">
+              <div className="flex items-center px-3 py-1.5 bg-white/10 rounded-lg">
                 <div className="w-7 h-7 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
                   {session.user.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
@@ -67,7 +67,7 @@ export default async function AdminLayout({
                 className="flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
               >
                 <HomeIcon className="w-4 h-4 mr-1.5" />
-                <span className="hidden sm:inline">View Site</span>
+                View Site
               </Link>
               
               <form action="/api/auth/signout" method="POST">
@@ -75,8 +75,8 @@ export default async function AdminLayout({
                   type="submit"
                   className="flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm"
                 >
-                  <ArrowRightOnRectangleIcon className="w-4 h-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Sign Out</span>
+                  <ArrowRightOnRectangleIcon className="w-4 h-4 mr-1.5" />
+                  Sign Out
                 </button>
               </form>
             </div>
@@ -84,8 +84,8 @@ export default async function AdminLayout({
         </div>
       </header>
 
-      {/* Spacer for admin header */}
-      <div className="h-14 lg:h-16"></div>
+      {/* Spacer for admin header - only on desktop */}
+      <div className="hidden lg:block h-16"></div>
 
       <div className="flex">
         {/* Fixed Sidebar - starts after both headers (desktop only) */}
