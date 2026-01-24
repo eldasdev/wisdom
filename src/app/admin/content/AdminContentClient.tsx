@@ -75,6 +75,7 @@ const statusTabs = [
   { key: 'REVIEW', label: 'In Review', icon: EyeIcon, color: 'amber' },
   { key: 'PUBLISHED', label: 'Published', icon: CheckCircleIcon, color: 'green' },
   { key: 'FEATURED', label: 'Featured', icon: StarIcon, color: 'purple' },
+  { key: 'ARCHIVED', label: 'Archived', icon: ArchiveBoxIcon, color: 'slate' },
 ];
 
 export function AdminContentClient({ initialContent, statusCounts, currentStatus }: AdminContentClientProps) {
@@ -227,6 +228,52 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
     } catch (error) {
       console.error('Failed to deny content:', error);
       alert('Failed to deny content. Please try again.');
+    }
+  };
+
+  const handleArchive = async (contentId: string) => {
+    if (!confirm('Are you sure you want to archive this content? It will be moved to the archive and hidden from the main site.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/admin/content/${contentId}/status`, {
+        method: 'POST',
+        body: new URLSearchParams({ status: 'ARCHIVED' }),
+      });
+
+      if (response.ok) {
+        setContent(prev => prev.map(item =>
+          item.id === contentId ? { ...item, status: 'ARCHIVED' as ContentStatus } : item
+        ));
+        setNotification({ message: 'Content has been archived.', visible: true });
+      } else {
+        throw new Error('Failed to archive content');
+      }
+    } catch (error) {
+      console.error('Failed to archive content:', error);
+      alert('Failed to archive content. Please try again.');
+    }
+  };
+
+  const handleRestore = async (contentId: string) => {
+    try {
+      const response = await fetch(`/api/admin/content/${contentId}/status`, {
+        method: 'POST',
+        body: new URLSearchParams({ status: 'DRAFT' }),
+      });
+
+      if (response.ok) {
+        setContent(prev => prev.map(item =>
+          item.id === contentId ? { ...item, status: 'DRAFT' as ContentStatus } : item
+        ));
+        setNotification({ message: 'Content restored to drafts.', visible: true });
+      } else {
+        throw new Error('Failed to restore content');
+      }
+    } catch (error) {
+      console.error('Failed to restore content:', error);
+      alert('Failed to restore content. Please try again.');
     }
   };
 
@@ -413,6 +460,23 @@ export function AdminContentClient({ initialContent, statusCounts, currentStatus
                       >
                         <PencilIcon className="w-4 h-4" />
                       </Link>
+                      {item.status === 'ARCHIVED' ? (
+                        <button
+                          onClick={() => handleRestore(item.id)}
+                          className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
+                          title="Restore from archive"
+                        >
+                          Restore
+                        </button>
+                      ) : item.status !== 'DRAFT' && (
+                        <button
+                          onClick={() => handleArchive(item.id)}
+                          className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Archive"
+                        >
+                          <ArchiveBoxIcon className="w-4 h-4" />
+                        </button>
+                      )}
                       <DeleteButton
                         action={`/api/admin/content/${item.id}/delete`}
                         itemName="content"

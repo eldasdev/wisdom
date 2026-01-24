@@ -30,16 +30,16 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Global Header */}
-      <div className="fixed top-0 left-0 right-0 z-50">
+      {/* Global Header - hidden on mobile for admin */}
+      <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
       
-      {/* Spacer for global header */}
-      <div className="h-16"></div>
+      {/* Spacer for global header - only on desktop */}
+      <div className="hidden lg:block h-16"></div>
       
       {/* Admin Panel Header */}
-      <header className="fixed top-16 left-0 right-0 z-40 h-16 bg-gradient-to-r from-[#0C2C55] to-slate-800 shadow-lg">
+      <header className="fixed top-0 lg:top-16 left-0 right-0 z-40 h-14 lg:h-16 bg-gradient-to-r from-[#0C2C55] to-slate-800 shadow-lg">
         <div className="h-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-full">
             <div className="flex items-center space-x-4">
@@ -85,10 +85,10 @@ export default async function AdminLayout({
       </header>
 
       {/* Spacer for admin header */}
-      <div className="h-16"></div>
+      <div className="h-14 lg:h-16"></div>
 
       <div className="flex">
-        {/* Fixed Sidebar - starts after both headers */}
+        {/* Fixed Sidebar - starts after both headers (desktop only) */}
         <aside className="hidden lg:block w-64 fixed top-32 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
           <div className="flex flex-col h-full">
             <nav className="flex-1 px-4 py-6 space-y-1">
@@ -200,9 +200,9 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        {/* Main Content - with left margin for sidebar */}
+        {/* Main Content - with left margin for sidebar on desktop */}
         <main className="flex-1 lg:ml-64">
-          <div className="py-6 px-4 sm:px-6 lg:px-8 pb-20 lg:pb-6 mt-16">
+          <div className="py-4 px-3 sm:px-4 lg:px-8 pb-24 lg:pb-6">
             {children}
           </div>
         </main>

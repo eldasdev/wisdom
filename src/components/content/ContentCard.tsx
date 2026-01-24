@@ -118,9 +118,16 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
         className="card-hover bg-white border border-gray-200 rounded-lg p-4 cursor-pointer"
       >
         <div className="flex items-start justify-between mb-2">
-          <span className={`inline-block px-2 py-1 text-xs font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded`}>
-            {getTypeLabel(content.type)}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`inline-block px-2 py-1 text-xs font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded`}>
+              {getTypeLabel(content.type)}
+            </span>
+            {content.status === 'ARCHIVED' && (
+              <span className="inline-block px-2 py-1 text-xs font-medium text-slate-600 bg-slate-100 rounded">
+                Archived
+              </span>
+            )}
+          </div>
           {content.featured && (
             <span className="inline-block px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded">
               Featured
@@ -147,9 +154,16 @@ export function ContentCard({ content, showExcerpt = true, compact = false }: Co
     >
       <div className="p-6">
         <div className="flex items-start justify-between mb-3">
-          <span className={`inline-block px-3 py-1 text-sm font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded-full`}>
-            {getTypeLabel(content.type)}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`inline-block px-3 py-1 text-sm font-medium ${getTypeColor(content.type)} ${getTypeBgColor(content.type)} rounded-full`}>
+              {getTypeLabel(content.type)}
+            </span>
+            {content.status === 'ARCHIVED' && (
+              <span className="inline-block px-3 py-1 text-sm font-medium text-slate-600 bg-slate-200 rounded-full">
+                📦 Archived
+              </span>
+            )}
+          </div>
           {content.featured && (
             <span className="inline-block px-3 py-1 text-sm font-medium text-orange-700 bg-orange-100 rounded-full">
               Featured

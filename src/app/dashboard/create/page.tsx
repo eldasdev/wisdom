@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
 import { PdfUploader } from '@/components/PdfUploader';
+import { TagsInput } from '@/components/TagsInput';
 
 type ContentType = 'ARTICLE' | 'CASE_STUDY' | 'BOOK' | 'BOOK_CHAPTER' | 'TEACHING_NOTE';
 
@@ -434,16 +435,11 @@ export default function CreateContentPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tags
             </label>
-            <input
-              type="text"
-              value={tagsInput}
-              onChange={(e) => handleTagsChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="strategy, leadership, innovation (comma-separated)"
+            <TagsInput
+              tags={formData.tags}
+              onChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
+              placeholder="Type a tag and press Enter"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Separate tags with commas
-            </p>
           </div>
         </div>
 

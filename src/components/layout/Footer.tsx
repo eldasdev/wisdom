@@ -1,30 +1,33 @@
-import Link from 'next/link';
-import { BookOpenIcon } from '@heroicons/react/24/outline';
+'use client';
 
-const footerNavigation = {
-  content: [
-    { name: 'Articles', href: '/articles' },
-    { name: 'Case Studies', href: '/case-studies' },
-    { name: 'Books & Chapters', href: '/books' },
-    { name: 'Collections', href: '/collections' },
-    { name: 'Teaching Notes', href: '/teaching-notes' },
-  ],
-  about: [
-    { name: 'About Wisdom', href: '/about' },
-    { name: 'Mission', href: '/mission' },
-    { name: 'Authors', href: '/authors' },
-    { name: 'Contact', href: '/contact' },
-  ],
-  resources: [
-    { name: 'Browse Tags', href: '/tags' },
-    { name: 'For Educators', href: '/educators' },
-    { name: 'For Researchers', href: '/researchers' },
-    { name: 'For Students', href: '/students' },
-    { name: 'Institutions', href: '/institutions' },
-  ],
-};
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslations } from '@/lib/i18n';
 
 export function Footer() {
+  const { locale } = useLanguage();
+  const t = useMemo(() => getTranslations(locale), [locale]);
+
+  const footerNavigation = useMemo(() => ({
+    content: [
+      { name: t.contentTypes.article + 's', href: '/articles' },
+      { name: t.contentTypes.caseStudy.replace(' ', '') === 'CaseStudy' ? 'Case Studies' : t.contentTypes.caseStudy, href: '/case-studies' },
+      { name: t.contentTypes.book + 's', href: '/books' },
+      { name: t.contentTypes.collection + 's', href: '/collections' },
+      { name: t.contentTypes.teachingNote + 's', href: '/teaching-notes' },
+    ],
+    about: [
+      { name: t.nav.aboutUs, href: '/about' },
+      { name: t.nav.contact, href: '/contact' },
+    ],
+    resources: [
+      { name: t.common.tags, href: '/tags' },
+      { name: t.nav.pricing, href: '/pricing' },
+    ],
+  }), [t]);
+
   return (
     <footer className="bg-gradient-to-b from-gray-50 to-gray-100 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
@@ -40,7 +43,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-gray-600 max-w-xs mb-6 leading-relaxed">
-              Professional academic and business publishing platform featuring peer-reviewed content from leading scholars.
+              {t.home.subtitle}
             </p>
             <div className="flex space-x-3">
               {/* Instagram */}
@@ -67,11 +70,11 @@ export function Footer() {
           {/* Content */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              Content
+              {locale === 'uz' ? 'Kontent' : locale === 'ru' ? 'Контент' : 'Content'}
             </h3>
             <ul className="space-y-2.5">
               {footerNavigation.content.map((item) => (
-                <li key={item.name}>
+                <li key={item.href}>
                   <Link
                     href={item.href}
                     className="text-sm text-gray-600 hover:text-[#0C2C55] transition-colors"
@@ -86,11 +89,11 @@ export function Footer() {
           {/* About */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              About
+              {t.nav.aboutUs}
             </h3>
             <ul className="space-y-2.5">
               {footerNavigation.about.map((item) => (
-                <li key={item.name}>
+                <li key={item.href}>
                   <Link
                     href={item.href}
                     className="text-sm text-gray-600 hover:text-[#0C2C55] transition-colors"
@@ -105,11 +108,11 @@ export function Footer() {
           {/* Resources */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              Resources
+              {locale === 'uz' ? 'Resurslar' : locale === 'ru' ? 'Ресурсы' : 'Resources'}
             </h3>
             <ul className="space-y-2.5">
               {footerNavigation.resources.map((item) => (
-                <li key={item.name}>
+                <li key={item.href}>
                   <Link
                     href={item.href}
                     className="text-sm text-gray-600 hover:text-[#0C2C55] transition-colors"
@@ -126,17 +129,17 @@ export function Footer() {
         <div className="mt-10 pt-8 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500 text-center sm:text-left">
-              © 2026 Wisdom Publishing. All rights reserved.
+              © 2026 Wisdom Publishing. {t.footer.allRightsReserved}.
             </p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
               <Link href="/privacy" className="text-sm text-gray-500 hover:text-[#0C2C55] transition-colors">
-                Privacy
+                {t.footer.privacyPolicy}
               </Link>
               <Link href="/terms" className="text-sm text-gray-500 hover:text-[#0C2C55] transition-colors">
-                Terms
+                {t.footer.termsOfService}
               </Link>
               <Link href="/accessibility" className="text-sm text-gray-500 hover:text-[#0C2C55] transition-colors">
-                Accessibility
+                {t.footer.accessibility}
               </Link>
             </div>
           </div>

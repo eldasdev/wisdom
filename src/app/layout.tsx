@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Providers from "./providers";
 import { LanguageSync } from "@/components/LanguageSync";
+import { ContactDeveloper } from "@/components/ContactDeveloper";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Providers>
           <LanguageSync />
           {children}
+          <ContactDeveloper />
         </Providers>
       </body>
     </html>

@@ -36,15 +36,15 @@ export function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-sm font-medium transition-all duration-200 border border-gray-200"
+        className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-sm font-medium transition-all duration-200 border border-gray-200"
+        aria-label="Select language"
       >
         <CurrentFlag className="w-5 h-4 rounded-sm" />
-        <span className="hidden sm:inline">{currentLocale.name}</span>
-        <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-[60]">
           {locales.map((loc) => {
             const localeInfo = localeNames[loc];
             const FlagComponent = flagComponents[loc];
@@ -55,13 +55,13 @@ export function LanguageSwitcher() {
                   setLocale(loc);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 text-sm transition-colors ${
                   locale === loc
                     ? 'bg-indigo-50 text-indigo-600 font-medium'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <FlagComponent className="w-6 h-4 rounded-sm" />
+                <FlagComponent className="w-5 h-3.5 sm:w-6 sm:h-4 rounded-sm" />
                 <span>{localeInfo.name}</span>
                 {locale === loc && (
                   <span className="ml-auto text-indigo-600">✓</span>

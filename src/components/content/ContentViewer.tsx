@@ -13,8 +13,12 @@ interface ContentViewerProps {
 }
 
 export function ContentViewer({ content, showMetadata = true, relatedContent = [] }: ContentViewerProps) {
+  // Normalize type to lowercase for comparison (database stores UPPERCASE)
+  const normalizeType = (type: string) => type?.toLowerCase().replace(/_/g, '-');
+  
   const getTypeLabel = (type: Content['type']) => {
-    switch (type) {
+    const normalized = normalizeType(type as string);
+    switch (normalized) {
       case 'article':
         return 'Article';
       case 'case-study':
@@ -33,7 +37,8 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
   };
 
   const getTypeColor = (type: Content['type']) => {
-    switch (type) {
+    const normalized = normalizeType(type as string);
+    switch (normalized) {
       case 'article':
         return 'accent-article-bg';
       case 'case-study':
@@ -135,7 +140,7 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
                 <span>{viewCount.toLocaleString()} views</span>
               </div>
             )}
-            {content.type === 'article' && 'readTime' in content && (
+            {normalizeType(content.type as string) === 'article' && 'readTime' in content && (
               <div className="text-sm text-gray-500">
                 {(content as { readTime: number }).readTime} min read
               </div>
@@ -187,7 +192,8 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
   };
 
   const renderSpecificMetadata = () => {
-    switch (content.type) {
+    const normalized = normalizeType(content.type as string);
+    switch (normalized) {
       case 'case-study':
         return (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -275,7 +281,9 @@ export function ContentViewer({ content, showMetadata = true, relatedContent = [
   };
 
   // Render rich views based on content type
-  switch (content.type) {
+  const contentTypeNormalized = normalizeType(content.type as string);
+  
+  switch (contentTypeNormalized) {
     case 'article':
       return <ArticleView content={content} relatedContent={relatedContent} />;
 

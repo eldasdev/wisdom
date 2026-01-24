@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import {
   UserIcon,
@@ -20,47 +20,52 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { LanguageSwitcher } from './LanguageSwitcher';
-
-const adminNavigation = [
-  { name: 'Analytics', href: '/analytics' },
-];
-
-// New navigation structure
-const mainNavigation = [
-  {
-    name: 'About Us',
-    href: '/about/publishing',
-    hasDropdown: true,
-    items: [
-      { name: 'Open Statistics Data', href: '/about/statistics', description: 'For new comers' },
-      { name: 'About Publishing', href: '/about/publishing' },
-      { name: 'Editorial Board', href: '/about/editorial-board' },
-    ]
-  },
-  {
-    name: 'Archive',
-    href: '/archive',
-    hasDropdown: false,
-  },
-  {
-    name: 'Major Topics',
-    href: '/topics/economics',
-    hasDropdown: true,
-    items: [
-      { name: 'Economics', href: '/topics/economics' },
-      { name: 'Business', href: '/topics/business' },
-      { name: 'Language Sciences', href: '/topics/language-sciences' },
-      { name: 'Philosophy', href: '/topics/philosophy' },
-    ]
-  },
-  {
-    name: 'Pricing',
-    href: '/pricing',
-    hasDropdown: false,
-  },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslations } from '@/lib/i18n';
 
 export function Header() {
+  const { locale } = useLanguage();
+  const t = useMemo(() => getTranslations(locale), [locale]);
+
+  // Navigation with translations
+  const adminNavigation = useMemo(() => [
+    { name: t.nav.analytics, href: '/analytics' },
+  ], [t]);
+
+  const mainNavigation = useMemo(() => [
+    {
+      name: t.nav.aboutUs,
+      href: '/about/publishing',
+      hasDropdown: true,
+      items: [
+        { name: t.about.statistics, href: '/about/statistics', description: '' },
+        { name: t.about.publishing, href: '/about/publishing' },
+        { name: t.about.editorialBoard, href: '/about/editorial-board' },
+      ]
+    },
+    {
+      name: t.nav.archive,
+      href: '/archive',
+      hasDropdown: false,
+    },
+    {
+      name: t.nav.majorTopics,
+      href: '/topics/economics',
+      hasDropdown: true,
+      items: [
+        { name: t.topics.economics, href: '/topics/economics' },
+        { name: t.topics.business, href: '/topics/business' },
+        { name: t.topics.languageSciences, href: '/topics/language-sciences' },
+        { name: t.topics.philosophy, href: '/topics/philosophy' },
+      ]
+    },
+    {
+      name: t.nav.pricing,
+      href: '/pricing',
+      hasDropdown: false,
+    },
+  ], [t]);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -183,16 +188,16 @@ export function Header() {
           </nav>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3">
             {/* Language Switcher */}
             <LanguageSwitcher />
             
-            {/* Contact Button */}
+            {/* Contact Button - hidden on mobile, shown on sm+ */}
             <Link
               href="/contact"
-              className="px-4 py-2 bg-gradient-to-r from-[#0C2C55] to-slate-600 text-white rounded-lg text-sm font-medium hover:from-[#0C2C55]/90 hover:to-slate-600/90 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="hidden sm:flex px-4 py-2 bg-gradient-to-r from-[#0C2C55] to-slate-600 text-white rounded-lg text-sm font-medium hover:from-[#0C2C55]/90 hover:to-slate-600/90 transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Contact
+              {t.nav.contact}
             </Link>
             
             {/* Search Button */}
@@ -378,7 +383,7 @@ export function Header() {
                   className="block w-full px-4 py-2.5 bg-gradient-to-r from-[#0C2C55] to-slate-600 text-white rounded-lg text-base font-medium hover:from-[#0C2C55]/90 hover:to-slate-600/90 transition-all duration-200 shadow-md hover:shadow-lg text-center"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Contact
+                  {t.nav.contact}
                 </Link>
               </div>
 

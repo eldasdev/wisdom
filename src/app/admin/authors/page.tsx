@@ -145,110 +145,185 @@ export default function AdminAuthorsPage() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Author
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Institution
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Content
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {authors.map((author) => (
-                  <tr key={author.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          {author.image ? (
-                            <img
-                              className="h-10 w-10 rounded-full object-cover"
-                              src={author.image}
-                              alt={author.name}
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                              <UserIcon className="h-5 w-5 text-gray-500" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {author.name}
-                          </div>
-                          {author.title && (
-                            <div className="text-sm text-gray-500">{author.title}</div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {author.institution || <span className="text-gray-400">Not specified</span>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        author._count.authoredContent > 0
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {author._count.authoredContent} {author._count.authoredContent === 1 ? 'item' : 'items'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {author.email ? (
-                          <a href={`mailto:${author.email}`} className="text-blue-600 hover:underline">
-                            {author.email}
-                          </a>
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-200">
+              {authors.map((author) => (
+                <div key={author.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex-shrink-0 h-12 w-12">
+                        {author.image ? (
+                          <img
+                            className="h-12 w-12 rounded-full object-cover"
+                            src={author.image}
+                            alt={author.name}
+                          />
                         ) : (
-                          <span className="text-gray-400">No email</span>
+                          <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                            <UserIcon className="h-6 w-6 text-gray-500" />
+                          </div>
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <Link
-                          href={`/admin/authors/${author.id}`}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </Link>
-                        <Link
-                          href={`/admin/authors/${author.id}/edit`}
-                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </Link>
-                        <button
-                          onClick={() => setDeleteModal({ show: true, author })}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {author.name}
+                        </p>
+                        {author.title && (
+                          <p className="text-xs text-gray-500 truncate">{author.title}</p>
+                        )}
+                        <p className="text-xs text-gray-400 truncate">
+                          {author.institution || 'No institution'}
+                        </p>
                       </div>
-                    </td>
+                    </div>
+                    <span className={`flex-shrink-0 ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      author._count.authoredContent > 0
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {author._count.authoredContent}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    {author.email ? (
+                      <a href={`mailto:${author.email}`} className="text-xs text-blue-600 truncate max-w-[60%]">
+                        {author.email}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-gray-400">No email</span>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/admin/authors/${author.id}`}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </Link>
+                      <Link
+                        href={`/admin/authors/${author.id}/edit`}
+                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </Link>
+                      <button
+                        onClick={() => setDeleteModal({ show: true, author })}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Institution
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Content
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {authors.map((author) => (
+                    <tr key={author.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            {author.image ? (
+                              <img
+                                className="h-10 w-10 rounded-full object-cover"
+                                src={author.image}
+                                alt={author.name}
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <UserIcon className="h-5 w-5 text-gray-500" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {author.name}
+                            </div>
+                            {author.title && (
+                              <div className="text-sm text-gray-500">{author.title}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {author.institution || <span className="text-gray-400">Not specified</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          author._count.authoredContent > 0
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {author._count.authoredContent} {author._count.authoredContent === 1 ? 'item' : 'items'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {author.email ? (
+                            <a href={`mailto:${author.email}`} className="text-blue-600 hover:underline">
+                              {author.email}
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">No email</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          <Link
+                            href={`/admin/authors/${author.id}`}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                          </Link>
+                          <Link
+                            href={`/admin/authors/${author.id}/edit`}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Link>
+                          <button
+                            onClick={() => setDeleteModal({ show: true, author })}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

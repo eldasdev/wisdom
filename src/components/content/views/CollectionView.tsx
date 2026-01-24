@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { CitationSection } from '../CitationSection';
 
 interface CollectionViewProps {
   content: SerializableContent;
@@ -364,6 +365,17 @@ export function CollectionView({ content, relatedContent = [] }: CollectionViewP
               </div>
             )}
           </div>
+        </div>
+
+        {/* Cite This Content Section */}
+        <div className="mb-8">
+          <CitationSection
+            title={content.title}
+            authors={content.authors || []}
+            publishedAt={content.publishedAt}
+            doi={content.doi}
+            contentType={content.type}
+          />
         </div>
 
         {/* Related Collections */}

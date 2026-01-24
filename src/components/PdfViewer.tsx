@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   ChevronLeftIcon,
@@ -16,11 +16,8 @@ import {
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Set up PDF.js worker - use local copy for reliability
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 interface PdfViewerProps {
   pdfUrl: string;
@@ -29,12 +26,27 @@ interface PdfViewerProps {
   showOpenInNewTab?: boolean;
 }
 
+/**
+ * Convert a static PDF URL to use the API route for better compatibility
+ * This ensures proper CORS headers and guest user access
+ */
+function getPdfApiUrl(url: string): string {
+  // If the URL starts with /uploads/, use the API route
+  if (url.startsWith('/uploads/')) {
+    // Convert /uploads/pdfs/file.pdf to /api/pdf/pdfs/file.pdf
+    return `/api/pdf${url.replace('/uploads', '')}`;
+  }
+  return url;
+}
+
 export function PdfViewer({ 
   pdfUrl, 
   fileName, 
   className = '',
   showOpenInNewTab = true,
 }: PdfViewerProps) {
+  // Use the API route for better compatibility
+  const apiUrl = useMemo(() => getPdfApiUrl(pdfUrl), [pdfUrl]);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
@@ -75,7 +87,7 @@ export function PdfViewer({
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = pdfUrl;
+    link.href = apiUrl;
     link.download = fileName || 'document.pdf';
     link.target = '_blank';
     document.body.appendChild(link);
@@ -84,7 +96,7 @@ export function PdfViewer({
   };
 
   const handleOpenInNewTab = () => {
-    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    window.open(apiUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -174,7 +186,7 @@ export function PdfViewer({
       </div>
 
       {/* PDF Document */}
-      <div className="overflow-auto max-h-[800px] flex justify-center p-4">
+      <div className="overflow-auto min-h-[600px] max-h-[900px] flex justify-center p-4">
         {loading && (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -182,9 +194,13 @@ export function PdfViewer({
         )}
 
         {error && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-            <p className="text-lg font-medium">Unable to display PDF</p>
-            <p className="text-sm mt-2">{error}</p>
+          <div className="flex flex-col items-center justify-center w-full">
+            {/* Fallback to iframe when react-pdf fails */}
+            <iframe
+              src={apiUrl}
+              className="w-full h-[800px] border-0 rounded-lg"
+              title="PDF Document"
+            />
             <div className="mt-4 flex gap-3">
               <button
                 onClick={handleOpenInNewTab}
@@ -205,7 +221,7 @@ export function PdfViewer({
         )}
 
         <Document
-          file={pdfUrl}
+          file={apiUrl}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}

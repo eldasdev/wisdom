@@ -60,4 +60,30 @@ export const en = {
     published: 'Published',
     archived: 'Archived',
   },
+  // User Menu
+  user: {
+    profile: 'Profile',
+    settings: 'Settings',
+    dashboard: 'Dashboard',
+    adminPanel: 'Admin Panel',
+    signOut: 'Sign Out',
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+  },
+  // Footer
+  footer: {
+    allRightsReserved: 'All rights reserved',
+    privacyPolicy: 'Privacy Policy',
+    termsOfService: 'Terms of Service',
+    accessibility: 'Accessibility',
+  },
+  // Home Page
+  home: {
+    title: 'Wisdom Knowledge Hub',
+    subtitle: 'Discover academic articles, case studies, and research from leading scholars and practitioners',
+    featuredContent: 'Featured Content',
+    latestArticles: 'Latest Articles',
+    browseByTopic: 'Browse by Topic',
+    viewAll: 'View All',
+  },
 };

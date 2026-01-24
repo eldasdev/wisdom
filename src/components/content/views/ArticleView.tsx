@@ -1,10 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { SerializableContent } from '@/lib/types';
 import Link from 'next/link';
 import { ArrowDownTrayIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { CitationSection } from '../CitationSection';
+import { ContentActionButtons } from '../ContentActionButtons';
+
+/**
+ * Convert a static PDF URL to use the API route for better compatibility
+ * This ensures proper CORS headers and guest user access
+ */
+function getPdfApiUrl(url: string): string {
+  if (url.startsWith('/uploads/')) {
+    return `/api/pdf${url.replace('/uploads', '')}`;
+  }
+  return url;
+}
 
 // Dynamically import PdfViewer to avoid SSR issues with react-pdf
 const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
@@ -25,6 +38,11 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
   const [readingProgress, setReadingProgress] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [claps, setClaps] = useState(0);
+  
+  // Convert PDF URL to use the API route for better guest access
+  const pdfApiUrl = useMemo(() => {
+    return content.pdfUrl ? getPdfApiUrl(content.pdfUrl) : null;
+  }, [content.pdfUrl]);
 
   useEffect(() => {
     const updateReadingProgress = () => {
@@ -93,17 +111,25 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
 
       {/* Header */}
       <header className="mb-12">
-        {/* Category */}
-        {content.category && (
-          <div className="mb-6">
+        {/* Top Bar with Category and Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          {/* Category */}
+          {content.category && (
             <Link
               href={`/articles?categories=${encodeURIComponent(content.category)}`}
-              className="inline-block px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+              className="inline-block px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors w-fit"
             >
               {content.category}
             </Link>
-          </div>
-        )}
+          )}
+          
+          {/* Action Buttons */}
+          <ContentActionButtons
+            title={content.title}
+            description={content.description}
+            pdfUrl={content.pdfUrl}
+          />
+        </div>
 
         {/* Title */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
@@ -116,10 +142,10 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
         </p>
 
         {/* PDF Action Buttons */}
-        {content.pdfUrl && (
+        {pdfApiUrl ? (
           <div className="mb-8 flex flex-wrap gap-4">
             <a
-              href={content.pdfUrl}
+              href={pdfApiUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -128,7 +154,7 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
               View PDF
             </a>
             <a
-              href={content.pdfUrl}
+              href={pdfApiUrl}
               download={content.pdfFileName || 'document.pdf'}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
@@ -136,7 +162,7 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
               Download PDF
             </a>
           </div>
-        )}
+        ) : null}
 
         {/* Author & Meta */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 border-t border-b border-gray-200">
@@ -198,7 +224,7 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
       </div>
 
       {/* PDF Document Section */}
-      {content.pdfUrl && (
+      {pdfApiUrl && (
         <div className="mb-12 bg-white rounded-2xl border-2 border-blue-200 shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -213,7 +239,7 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
               </div>
             </div>
             <a
-              href={content.pdfUrl}
+              href={pdfApiUrl}
               download={content.pdfFileName || 'document.pdf'}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-blue-600 bg-white rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
@@ -223,7 +249,7 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
           </div>
           <div className="p-6">
             <PdfViewer 
-              pdfUrl={content.pdfUrl} 
+              pdfUrl={content.pdfUrl!} 
               fileName={content.pdfFileName || undefined}
               className="rounded-lg"
             />
@@ -248,45 +274,16 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
         </div>
       )}
 
-      {/* Citation Information */}
-      {(content.doi || content.citationCount !== undefined) && (
-        <div className="mb-12 p-6 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Citation Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {content.doi && (
-              <div>
-                <span className="text-sm font-medium text-gray-700">DOI:</span>
-                <a
-                  href={`https://doi.org/${content.doi}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 text-blue-600 hover:text-blue-800 font-mono text-sm break-all"
-                >
-                  {content.doi}
-                </a>
-              </div>
-            )}
-            {content.citationCount !== undefined && (
-              <div>
-                <span className="text-sm font-medium text-gray-700">Citations:</span>
-                <span className="ml-2 text-gray-900">{content.citationCount}</span>
-              </div>
-            )}
-          </div>
-          {content.bibtex && (
-            <div className="mt-4">
-              <details className="group">
-                <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-                  BibTeX Citation
-                </summary>
-                <pre className="mt-2 p-3 bg-white rounded text-xs font-mono text-gray-800 overflow-x-auto">
-                  {content.bibtex}
-                </pre>
-              </details>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Cite This Content Section */}
+      <div className="mb-12">
+        <CitationSection
+          title={content.title}
+          authors={content.authors || []}
+          publishedAt={content.publishedAt}
+          doi={content.doi}
+          contentType={content.type}
+        />
+      </div>
 
       {/* Engagement Section */}
       <div className="border-t border-gray-200 pt-8 mb-12">

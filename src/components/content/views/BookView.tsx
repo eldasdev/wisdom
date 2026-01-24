@@ -10,8 +10,11 @@ import {
   BookOpenIcon,
   ArrowDownTrayIcon,
   DocumentTextIcon,
-  EyeIcon
+  EyeIcon,
+  ShoppingCartIcon
 } from '@heroicons/react/24/outline';
+import { CitationSection } from '../CitationSection';
+import { ContentActionButtons } from '../ContentActionButtons';
 
 // Dynamically import PdfViewer to avoid SSR issues with react-pdf
 const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
@@ -84,15 +87,43 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
 
               {/* Action Buttons */}
               <div className="mt-6 space-y-3">
-                <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                  📖 Read Sample
+                {content.pdfUrl && (
+                  <a
+                    href={content.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <EyeIcon className="w-5 h-5" />
+                    Read Sample
+                  </a>
+                )}
+                <button className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-colors font-medium shadow-md">
+                  <ShoppingCartIcon className="w-5 h-5" />
+                  Purchase Book
                 </button>
-                <button className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
-                  🛒 Purchase Book
-                </button>
-                <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-                  📥 Download Resources
-                </button>
+                {content.pdfUrl && (
+                  <a
+                    href={content.pdfUrl}
+                    download
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    <ArrowDownTrayIcon className="w-5 h-5" />
+                    Download Resources
+                  </a>
+                )}
+              </div>
+              
+              {/* Share/Save Buttons */}
+              <div className="mt-4">
+                <ContentActionButtons
+                  title={content.title}
+                  description={content.description}
+                  pdfUrl={content.pdfUrl}
+                  showDownload={false}
+                  showPrint={false}
+                  variant="compact"
+                />
               </div>
             </div>
 
@@ -500,6 +531,17 @@ export function BookView({ content, relatedContent = [] }: BookViewProps) {
             </div>
           </div>
         )}
+
+        {/* Cite This Content Section */}
+        <div className="mb-8">
+          <CitationSection
+            title={content.title}
+            authors={content.authors || []}
+            publishedAt={content.publishedAt}
+            doi={content.doi}
+            contentType={content.type}
+          />
+        </div>
 
         {/* Related Books */}
         {relatedContent && relatedContent.length > 0 && (

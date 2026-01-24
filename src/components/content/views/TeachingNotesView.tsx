@@ -13,6 +13,7 @@ import {
   ArrowDownTrayIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
+import { CitationSection } from '../CitationSection';
 
 // Dynamically import PdfViewer to avoid SSR issues with react-pdf
 const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
@@ -498,6 +499,17 @@ export function TeachingNotesView({ content, relatedContent = [] }: TeachingNote
             </div>
           </div>
         )}
+
+        {/* Cite This Content Section */}
+        <div className="mb-8">
+          <CitationSection
+            title={content.title}
+            authors={content.authors || []}
+            publishedAt={content.publishedAt}
+            doi={content.doi}
+            contentType={content.type}
+          />
+        </div>
 
         {/* Related Teaching Materials */}
         {relatedContent && relatedContent.length > 0 && (

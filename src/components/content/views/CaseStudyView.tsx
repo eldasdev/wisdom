@@ -10,8 +10,10 @@ import {
   BookOpenIcon,
   ArrowDownTrayIcon,
   DocumentTextIcon,
-  EyeIcon
+  EyeIcon,
 } from '@heroicons/react/24/outline';
+import { CitationSection } from '../CitationSection';
+import { ContentActionButtons } from '../ContentActionButtons';
 
 // Dynamically import PdfViewer to avoid SSR issues with react-pdf
 const PdfViewer = dynamic(() => import('@/components/PdfViewer').then(mod => ({ default: mod.PdfViewer })), {
@@ -59,24 +61,28 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
         {/* Header */}
         <header className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 flex-wrap gap-2">
               <span className="inline-block px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">
                 Case Study
               </span>
-              <span className="inline-block px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">
-                {content.industry}
-              </span>
+              {content.industry && (
+                <span className="inline-block px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">
+                  {content.industry}
+                </span>
+              )}
+              {content.company && (
+                <span className="inline-block px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
+                  {content.company}
+                </span>
+              )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
-                📥 Download PDF
-              </button>
-              <button className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
-                🔗 Share
-              </button>
-            </div>
+            <ContentActionButtons
+              title={content.title}
+              description={content.description}
+              pdfUrl={content.pdfUrl}
+            />
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -412,6 +418,17 @@ export function CaseStudyView({ content, relatedContent = [] }: CaseStudyViewPro
             </div>
           </div>
         )}
+
+        {/* Cite This Content Section */}
+        <div className="mb-8">
+          <CitationSection
+            title={content.title}
+            authors={content.authors || []}
+            publishedAt={content.publishedAt}
+            doi={content.doi}
+            contentType={content.type}
+          />
+        </div>
 
         {/* Related Case Studies */}
         {relatedContent && relatedContent.length > 0 && (

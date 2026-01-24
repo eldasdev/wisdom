@@ -60,4 +60,30 @@ export const uz = {
     published: 'Nashr Qilingan',
     archived: 'Arxivlangan',
   },
+  // User Menu
+  user: {
+    profile: 'Profil',
+    settings: 'Sozlamalar',
+    dashboard: 'Boshqaruv Paneli',
+    adminPanel: 'Admin Panel',
+    signOut: 'Chiqish',
+    signIn: 'Kirish',
+    signUp: 'Ro\'yxatdan O\'tish',
+  },
+  // Footer
+  footer: {
+    allRightsReserved: 'Barcha huquqlar himoyalangan',
+    privacyPolicy: 'Maxfiylik Siyosati',
+    termsOfService: 'Foydalanish Shartlari',
+    accessibility: 'Qulaylik',
+  },
+  // Home Page
+  home: {
+    title: 'Wisdom Bilim Markazi',
+    subtitle: 'Yetakchi olimlar va mutaxassislarning ilmiy maqolalari, keys-stadilar va tadqiqotlarini kashf eting',
+    featuredContent: 'Tavsiya Etilgan Kontent',
+    latestArticles: 'Yangi Maqolalar',
+    browseByTopic: 'Mavzu Bo\'yicha Ko\'rish',
+    viewAll: 'Barchasini Ko\'rish',
+  },
 };

@@ -60,4 +60,30 @@ export const ru = {
     published: 'Опубликовано',
     archived: 'В Архиве',
   },
+  // User Menu
+  user: {
+    profile: 'Профиль',
+    settings: 'Настройки',
+    dashboard: 'Панель Управления',
+    adminPanel: 'Админ Панель',
+    signOut: 'Выйти',
+    signIn: 'Войти',
+    signUp: 'Регистрация',
+  },
+  // Footer
+  footer: {
+    allRightsReserved: 'Все права защищены',
+    privacyPolicy: 'Политика Конфиденциальности',
+    termsOfService: 'Условия Использования',
+    accessibility: 'Доступность',
+  },
+  // Home Page
+  home: {
+    title: 'Wisdom - Центр Знаний',
+    subtitle: 'Откройте для себя научные статьи, кейсы и исследования от ведущих ученых и практиков',
+    featuredContent: 'Рекомендуемый Контент',
+    latestArticles: 'Последние Статьи',
+    browseByTopic: 'Просмотр по Теме',
+    viewAll: 'Смотреть Все',
+  },
 };
