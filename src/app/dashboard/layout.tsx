@@ -220,7 +220,7 @@ export default async function DashboardLayout({
 
         {/* Main Content - with left margin for sidebar on desktop */}
         <main className="flex-1 lg:ml-64">
-          <div className="py-4 sm:py-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-6">
+          <div className="py-4 px-3 sm:px-4 lg:px-8 pb-24 lg:pb-6">
             {children}
           </div>
         </main>
