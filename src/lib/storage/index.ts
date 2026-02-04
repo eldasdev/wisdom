@@ -110,10 +110,8 @@ export async function fileExists(fileUrl: string): Promise<boolean> {
   try {
     // For Vercel Blob URLs, we can check by making a HEAD request
     if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
-      const response = await head(fileUrl, {
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
-      return response !== null;
+      const response = await fetch(fileUrl, { method: 'HEAD' });
+      return response.ok;
     }
     
     // Old local paths don't exist in blob storage

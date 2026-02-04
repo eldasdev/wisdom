@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { get } from '@vercel/blob';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -23,14 +22,18 @@ export async function GET(
     const blobUrl = request.nextUrl.searchParams.get('url');
     
     if (blobUrl && (blobUrl.startsWith('http://') || blobUrl.startsWith('https://'))) {
-      // Fetch from Vercel Blob
+      // Fetch from Vercel Blob (public URLs can be fetched directly)
       try {
-        const blob = await get(blobUrl, {
-          token: process.env.BLOB_READ_WRITE_TOKEN,
-        });
+        const response = await fetch(blobUrl);
         
-        // Convert blob to buffer
-        const arrayBuffer = await blob.arrayBuffer();
+        if (!response.ok) {
+          return NextResponse.json(
+            { error: 'File not found' },
+            { status: 404 }
+          );
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         
         return new NextResponse(buffer, {
