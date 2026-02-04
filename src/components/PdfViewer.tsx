@@ -27,15 +27,21 @@ interface PdfViewerProps {
 }
 
 /**
- * Convert a static PDF URL to use the API route for better compatibility
- * This ensures proper CORS headers and guest user access
+ * Convert a PDF URL to use the appropriate route
+ * Vercel Blob URLs work directly, local paths use the API route
  */
 function getPdfApiUrl(url: string): string {
-  // If the URL starts with /uploads/, use the API route
+  // If it's already a full URL (Vercel Blob), use it directly
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // If the URL starts with /uploads/, use the API route (legacy local storage)
   if (url.startsWith('/uploads/')) {
     // Convert /uploads/pdfs/file.pdf to /api/pdf/pdfs/file.pdf
     return `/api/pdf${url.replace('/uploads', '')}`;
   }
+  
   return url;
 }
 

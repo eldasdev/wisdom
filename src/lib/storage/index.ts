@@ -1,11 +1,9 @@
 /**
  * Storage abstraction layer for file uploads
- * Currently supports local storage for development
- * Can be extended to support cloud storage (Vercel Blob, Uploadthing, etc.)
+ * Uses Vercel Blob for cloud storage
  */
 
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
+import { put, del, head } from '@vercel/blob';
 import path from 'path';
 
 // Upload result interface
@@ -15,9 +13,6 @@ export interface UploadResult {
   size: number;
   mimeType: string;
 }
-
-// Configuration
-const LOCAL_UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || 'public/uploads';
 
 /**
  * Validate PDF file
@@ -61,30 +56,25 @@ export function generateUniqueFileName(originalName: string): string {
 }
 
 /**
- * Upload file to local storage
+ * Upload file to Vercel Blob storage
  */
 export async function uploadFile(
   buffer: Buffer,
   fileName: string,
   subDir: string = 'pdfs'
 ): Promise<UploadResult> {
-  const uploadDir = path.join(process.cwd(), LOCAL_UPLOAD_DIR, subDir);
-  
-  // Create directory if it doesn't exist
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-
   const uniqueFileName = generateUniqueFileName(fileName);
-  const filePath = path.join(uploadDir, uniqueFileName);
-  
-  await writeFile(filePath, buffer);
+  const blobPath = `${subDir}/${uniqueFileName}`;
 
-  // Return public URL
-  const url = `/${LOCAL_UPLOAD_DIR}/${subDir}/${uniqueFileName}`.replace('public/', '');
+  // Upload to Vercel Blob
+  const blob = await put(blobPath, buffer, {
+    access: 'public',
+    contentType: 'application/pdf',
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
 
   return {
-    url,
+    url: blob.url,
     fileName: uniqueFileName,
     size: buffer.length,
     mimeType: 'application/pdf',
@@ -92,26 +82,43 @@ export async function uploadFile(
 }
 
 /**
- * Delete file from storage
+ * Delete file from Vercel Blob storage
  */
 export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    const filePath = path.join(process.cwd(), 'public', fileUrl);
-    if (existsSync(filePath)) {
-      await unlink(filePath);
+    // Extract blob URL from the file URL
+    // Vercel Blob URLs are full URLs, so we can use them directly
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+      await del(fileUrl, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
       return true;
     }
+    
+    // If it's an old local path, it doesn't exist in blob storage
     return false;
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error('Error deleting file from blob storage:', error);
     return false;
   }
 }
 
 /**
- * Check if a file exists
+ * Check if a file exists in Vercel Blob storage
  */
-export function fileExists(fileUrl: string): boolean {
-  const filePath = path.join(process.cwd(), 'public', fileUrl);
-  return existsSync(filePath);
+export async function fileExists(fileUrl: string): Promise<boolean> {
+  try {
+    // For Vercel Blob URLs, we can check by making a HEAD request
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+      const response = await head(fileUrl, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return response !== null;
+    }
+    
+    // Old local paths don't exist in blob storage
+    return false;
+  } catch (error) {
+    return false;
+  }
 }

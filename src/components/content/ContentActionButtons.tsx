@@ -69,11 +69,19 @@ export function ContentActionButtons({
     window.print();
   };
 
-  // Convert PDF URL to API route for better compatibility
+  // Convert PDF URL to use the appropriate route
+  // Vercel Blob URLs work directly, local paths use the API route
   const getPdfApiUrl = (url: string): string => {
+    // If it's already a full URL (Vercel Blob), use it directly
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If the URL starts with /uploads/, use the API route (legacy local storage)
     if (url.startsWith('/uploads/')) {
       return `/api/pdf${url.replace('/uploads', '')}`;
     }
+    
     return url;
   };
 

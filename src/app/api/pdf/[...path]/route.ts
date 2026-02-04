@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { get } from '@vercel/blob';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -7,6 +8,7 @@ export const runtime = 'nodejs';
 
 /**
  * API Route to serve PDF files
+ * Handles both Vercel Blob URLs and legacy local file paths
  * This ensures PDFs are accessible to all users (including guests)
  * and handles proper CORS headers for the react-pdf library
  */
@@ -17,7 +19,41 @@ export async function GET(
   try {
     const { path: pathParts } = await params;
     
-    // Reconstruct the file path
+    // Check if this is a request for a blob URL (passed as query param)
+    const blobUrl = request.nextUrl.searchParams.get('url');
+    
+    if (blobUrl && (blobUrl.startsWith('http://') || blobUrl.startsWith('https://'))) {
+      // Fetch from Vercel Blob
+      try {
+        const blob = await get(blobUrl, {
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+        
+        // Convert blob to buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        return new NextResponse(buffer, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `inline; filename="${path.basename(blobUrl)}"`,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        });
+      } catch (error) {
+        console.error('Error fetching from blob:', error);
+        return NextResponse.json(
+          { error: 'File not found' },
+          { status: 404 }
+        );
+      }
+    }
+    
+    // Legacy: Handle local file paths (for backward compatibility)
     const filePath = path.join(process.cwd(), 'public', 'uploads', ...pathParts);
     
     // Security check: ensure the path is within the uploads directory
