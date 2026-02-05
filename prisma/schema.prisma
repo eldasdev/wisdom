@@ -127,6 +127,11 @@ model Content {
   // Journal relationship (optional - content can be published in a journal)
   journalId     String?
   journal       Journal?  @relation(fields: [journalId], references: [id], onDelete: SetNull)
+  
+  // Issue relationship (optional - content can be published in a journal issue)
+  // If issueId is set, content belongs to that issue (which belongs to a volume, which belongs to a journal)
+  issueId       String?
+  issue         Issue?    @relation(fields: [issueId], references: [id], onDelete: SetNull)
 
   createdAt     DateTime       @default(now())
 
@@ -224,10 +229,58 @@ model Journal {
   
   // Relations
   content     Content[]     // Content published in this journal
+  volumes     Volume[]      // Volumes of this journal
 }
 
 enum JournalStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+// Volume model - represents a volume of a journal (e.g., Volume 1, Volume 2)
+// Volumes are optional - journals can exist without volumes
+model Volume {
+  id          String        @id @default(cuid())
+  journalId   String?       // Optional - volume can belong to a journal
+  journal     Journal?      @relation(fields: [journalId], references: [id], onDelete: SetNull)
+  number      String        // Volume number (e.g., "1", "2", "2024")
+  title       String?       // Optional volume title
+  description String?       // Optional volume description
+  year        Int?          // Publication year of the volume
+  publishedAt DateTime?     // Publication date of the volume
+  status      JournalStatus @default(DRAFT) // Reuse JournalStatus enum
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  issues      Issue[]       // Issues in this volume
+  
+  // Ensure unique volume number per journal (if journalId is set)
+  @@unique([journalId, number])
+  @@index([journalId])
+  @@index([year])
+}
+
+// Issue model - represents an issue within a volume (e.g., Issue 1, Issue 2)
+// Issues are optional - volumes can exist without issues, content can exist without issues
+model Issue {
+  id          String        @id @default(cuid())
+  volumeId    String?       // Optional - issue can belong to a volume
+  volume      Volume?       @relation(fields: [volumeId], references: [id], onDelete: SetNull)
+  number      String        // Issue number (e.g., "1", "2", "Spring 2024")
+  title       String?       // Optional issue title
+  description String?       // Optional issue description
+  publishedAt DateTime?     // Publication date of the issue
+  status      JournalStatus @default(DRAFT) // Reuse JournalStatus enum
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  content     Content[]     // Content published in this issue
+  
+  // Ensure unique issue number per volume (if volumeId is set)
+  @@unique([volumeId, number])
+  @@index([volumeId])
+  @@index([publishedAt])
 }

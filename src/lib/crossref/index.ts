@@ -26,6 +26,7 @@ import type { ContentWithAuthors, DoiRegistrationResult } from './types';
 export { DoiService, doiService } from './doiService';
 export { CrossrefMetadataBuilder, metadataBuilder } from './metadataBuilder';
 export { CrossrefClient, crossrefClient } from './crossrefClient';
+export { generateCrossrefXML } from './xmlGenerator';
 export * from './types';
 
 /**
