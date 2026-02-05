@@ -79,7 +79,7 @@ export const uz = {
   },
   // Home Page
   home: {
-    title: 'Wisdom Bilim Markazi',
+    title: 'Prime SP Bilim Markazi',
     subtitle: 'Yetakchi olimlar va mutaxassislarning ilmiy maqolalari, keys-stadilar va tadqiqotlarini kashf eting',
     featuredContent: 'Tavsiya Etilgan Kontent',
     latestArticles: 'Yangi Maqolalar',

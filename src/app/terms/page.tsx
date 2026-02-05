@@ -6,7 +6,7 @@ export default function TermsPage() {
     {
       title: 'Acceptance of Terms',
       content: [
-        'By accessing and using the Wisdom Publishing platform, you agree to be bound by these Terms of Service',
+        'By accessing and using the Prime Scientific Publishing platform, you agree to be bound by these Terms of Service',
         'If you do not agree to these terms, you must not use our platform',
         'We reserve the right to modify these terms at any time, and your continued use constitutes acceptance',
         'You must be at least 13 years old to use our platform',
@@ -132,7 +132,7 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              These Terms of Service ("Terms") govern your access to and use of the Wisdom Publishing platform. By using our platform, you agree to be bound by these Terms.
+              These Terms of Service ("Terms") govern your access to and use of the Prime Scientific Publishing platform. By using our platform, you agree to be bound by these Terms.
             </p>
 
             {sections.map((section, index) => (
@@ -160,7 +160,7 @@ export default function TermsPage() {
               </p>
               <p className="text-gray-700">
                 <strong>Email:</strong> legal@wisdom.com<br />
-                <strong>Address:</strong> Wisdom Publishing, [Your Address]
+                <strong>Address:</strong> Prime Scientific Publishing, [Your Address]
               </p>
             </div>
           </div>

@@ -77,6 +77,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify journal exists if provided (outside transaction)
+    if (journalId) {
+      const journal = await prisma.journal.findUnique({
+        where: { id: journalId }
+      });
+      if (!journal) {
+        return NextResponse.json(
+          { error: 'Journal not found' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Start a transaction to create content and relationships
     const result = await prisma.$transaction(async (tx) => {
       // Create the content
@@ -92,6 +105,7 @@ export async function POST(request: NextRequest) {
           metadata,
           pdfUrl: pdfUrl || null,
           pdfFileName: pdfFileName || null,
+          journalId: journalId || null,
         },
       });
 
@@ -103,27 +117,35 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Create tag relationships
+      // Create tag relationships in batch
       if (tags && tags.length > 0) {
-        for (const tagName of tags) {
-          // Find or create tag
-          const tag = await tx.tag.upsert({
+        // First, upsert all tags to ensure they exist
+        const tagPromises = tags.map((tagName: string) =>
+          tx.tag.upsert({
             where: { name: tagName },
             update: {},
             create: { name: tagName },
-          });
+          })
+        );
 
-          // Create content-tag relationship
-          await tx.contentTag.create({
-            data: {
-              contentId: newContent.id,
-              tagId: tag.id,
-            },
-          });
-        }
+        const tagResults = await Promise.all(tagPromises);
+
+        // Then create all content-tag relationships
+        await Promise.all(
+          tagResults.map(tag =>
+            tx.contentTag.create({
+              data: {
+                contentId: newContent.id,
+                tagId: tag.id,
+              },
+            })
+          )
+        );
       }
 
       return newContent;
+    }, {
+      timeout: 10000, // 10 second timeout
     });
 
     return NextResponse.json({

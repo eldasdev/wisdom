@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 export const metadata: Metadata = {
-  title: 'Books | Wisdom',
+  title: 'Books | Prime SP',
   description: 'Academic and professional books on business, technology, and research methodology.',
 };
 

@@ -38,7 +38,7 @@ export function ContactDeveloper() {
       `From: ${formData.email}\n` +
       `Subject: ${formData.subject}\n\n` +
       `Message:\n${formData.message}\n\n` +
-      `---\nSent from Wisdom Platform`
+      `---\nSent from Prime SP Platform`
     );
     
     // Open email client - replace with your email

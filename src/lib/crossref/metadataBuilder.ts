@@ -18,7 +18,7 @@ export class CrossrefMetadataBuilder {
       password: process.env.CROSSREF_PASSWORD || '',
       prefix: process.env.CROSSREF_DOI_PREFIX || '10.XXXXX',
       apiUrl: process.env.CROSSREF_API_URL || 'https://api.crossref.org/v1/deposits',
-      journalTitle: process.env.CROSSREF_JOURNAL_TITLE || 'Wisdom Publishing',
+      journalTitle: process.env.CROSSREF_JOURNAL_TITLE || 'Prime Scientific Publishing',
       issn: process.env.CROSSREF_ISSN,
       baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000',
       ...config,

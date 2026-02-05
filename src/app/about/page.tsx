@@ -55,7 +55,7 @@ export default function AboutPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              About Wisdom
+              About Prime SP
             </h1>
             <p className="text-xl sm:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
               Professional academic and business publishing platform featuring peer-reviewed content from leading scholars.
@@ -71,13 +71,13 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto mb-16">
             <div className="prose prose-lg max-w-none">
               <p className="text-xl text-gray-700 leading-relaxed mb-6">
-                Wisdom is a premier academic and business publishing platform dedicated to advancing knowledge and professional practice through high-quality, peer-reviewed content.
+                Prime Scientific Publishing is a premier academic and business publishing platform dedicated to advancing knowledge and professional practice through high-quality, peer-reviewed content.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
                 We provide a comprehensive repository of articles, case studies, books, teaching notes, and curated collections that serve researchers, educators, students, and business professionals worldwide. Our mission is to make cutting-edge research and practical insights accessible to all.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Through rigorous peer review processes and collaboration with leading institutions, Wisdom ensures that every piece of content meets the highest standards of academic excellence and practical relevance.
+                Through rigorous peer review processes and collaboration with leading institutions, Prime Scientific Publishing ensures that every piece of content meets the highest standards of academic excellence and practical relevance.
               </p>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function AboutPage() {
               Join Our Community
             </h2>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Whether you're a researcher, educator, student, or professional, Wisdom has something for you.
+              Whether you're a researcher, educator, student, or professional, Prime SP has something for you.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link

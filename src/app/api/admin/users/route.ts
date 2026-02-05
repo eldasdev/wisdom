@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (role && ['USER', 'AUTHOR', 'ADMIN'].includes(role)) {
+    if (role && ['USER', 'AUTHOR', 'ADMIN', 'EDITOR', 'REVIEWER'].includes(role)) {
       where.role = role;
     }
 
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
-    if (!['USER', 'AUTHOR', 'ADMIN'].includes(role)) {
+    if (!['USER', 'AUTHOR', 'ADMIN', 'EDITOR', 'REVIEWER'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 

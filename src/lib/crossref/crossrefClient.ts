@@ -106,7 +106,7 @@ export class CrossrefClient {
           headers: {
             'Authorization': this.authHeader,
             'Content-Type': 'application/json',
-            'User-Agent': 'WisdomPublishing/1.0 (mailto:support@wisdompub.com)',
+            'User-Agent': 'PrimeScientificPublishing/1.0 (mailto:support@primesp.com)',
           },
           body: JSON.stringify(body),
         });
@@ -219,7 +219,7 @@ export class CrossrefClient {
       const response = await fetch(statusUrl, {
         headers: {
           'Authorization': this.authHeader,
-          'User-Agent': 'WisdomPublishing/1.0',
+          'User-Agent': 'PrimeScientificPublishing/1.0',
         },
       });
 
@@ -248,7 +248,7 @@ export class CrossrefClient {
       // Simple test - try to access the API
       const response = await fetch('https://api.crossref.org/works?rows=1', {
         headers: {
-          'User-Agent': 'WisdomPublishing/1.0',
+          'User-Agent': 'PrimeScientificPublishing/1.0',
         },
       });
 

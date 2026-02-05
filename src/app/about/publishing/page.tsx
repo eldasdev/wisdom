@@ -109,7 +109,7 @@ export default function PublishingPage() {
           <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
             <p className="text-lg text-gray-700 leading-relaxed mb-4">
-              Wisdom Publishing is dedicated to advancing knowledge through open access academic publishing. 
+              Prime Scientific Publishing is dedicated to advancing knowledge through open access academic publishing. 
               We provide a platform for researchers, scholars, and practitioners to share their work with a global audience, 
               fostering collaboration and innovation across disciplines.
             </p>

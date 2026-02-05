@@ -116,7 +116,7 @@ export default function PrivacyPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              At Wisdom Publishing, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+              At Prime Scientific Publishing, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
             </p>
 
             {sections.map((section, index) => (
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
               </p>
               <p className="text-gray-700">
                 <strong>Email:</strong> privacy@wisdom.com<br />
-                <strong>Address:</strong> Wisdom Publishing, [Your Address]
+                <strong>Address:</strong> Prime Scientific Publishing, [Your Address]
               </p>
             </div>
           </div>

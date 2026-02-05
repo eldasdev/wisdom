@@ -64,7 +64,7 @@ export default async function DashboardLayout({
                   <BookOpenIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <span className="text-lg font-bold text-white">Wisdom</span>
+                  <span className="text-lg font-bold text-white">Prime SP</span>
                   <span className="text-xs text-white/60 block -mt-1">Author Dashboard</span>
                 </div>
               </Link>

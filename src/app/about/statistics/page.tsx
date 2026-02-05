@@ -1,62 +1,95 @@
 'use client';
 
 import { PublicLayout } from '@/components/layout/PublicLayout';
+import { useQuery } from '@tanstack/react-query';
 import { 
   ChartBarIcon, 
   UsersIcon, 
   DocumentTextIcon, 
   TagIcon,
   EyeIcon,
-  ArrowTrendingUpIcon,
   CalendarIcon,
   AcademicCapIcon
 } from '@heroicons/react/24/outline';
 
+interface StatisticsData {
+  totalPublications: number;
+  activeAuthors: number;
+  totalAuthors: number;
+  totalViews: number;
+  researchTopics: number;
+  institutions: number;
+  thisMonth: number;
+  editorialBoard: number;
+}
+
+// Helper function to format numbers
+function formatNumber(num: number): string {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
 export default function StatisticsPage() {
-  const stats = [
+  const { data, isLoading, error } = useQuery<StatisticsData>({
+    queryKey: ['public-statistics'],
+    queryFn: async () => {
+      const response = await fetch('/api/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch statistics');
+      }
+      return response.json();
+    },
+  });
+
+  const stats = data ? [
     {
       icon: DocumentTextIcon,
       label: 'Total Publications',
-      value: '1,234',
-      change: '+12%',
+      value: formatNumber(data.totalPublications),
+      rawValue: data.totalPublications,
       color: 'from-blue-500 to-indigo-600'
     },
     {
       icon: UsersIcon,
       label: 'Active Authors',
-      value: '456',
-      change: '+8%',
+      value: formatNumber(data.activeAuthors),
+      rawValue: data.activeAuthors,
       color: 'from-emerald-500 to-teal-600'
     },
     {
       icon: EyeIcon,
       label: 'Total Views',
-      value: '89.2K',
-      change: '+24%',
+      value: formatNumber(data.totalViews),
+      rawValue: data.totalViews,
       color: 'from-purple-500 to-violet-600'
     },
     {
       icon: TagIcon,
       label: 'Research Topics',
-      value: '128',
-      change: '+5%',
+      value: formatNumber(data.researchTopics),
+      rawValue: data.researchTopics,
       color: 'from-orange-500 to-amber-600'
     },
     {
       icon: AcademicCapIcon,
       label: 'Institutions',
-      value: '67',
-      change: '+3%',
+      value: formatNumber(data.institutions),
+      rawValue: data.institutions,
       color: 'from-cyan-500 to-blue-600'
     },
     {
       icon: CalendarIcon,
       label: 'This Month',
-      value: '42',
-      change: '+15%',
+      value: formatNumber(data.thisMonth),
+      rawValue: data.thisMonth,
       color: 'from-pink-500 to-rose-600'
     },
-  ];
+  ] : [];
 
   return (
     <PublicLayout>
@@ -86,29 +119,49 @@ export default function StatisticsPage() {
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
-                  key={index}
-                  className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:border-indigo-300 transition-all duration-300"
+                  key={i}
+                  className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex items-center gap-1 text-emerald-600">
-                      <ArrowTrendingUpIcon className="w-4 h-4" />
-                      <span className="text-sm font-semibold">{stat.change}</span>
-                    </div>
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
                   </div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-32"></div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 mb-12 text-center">
+              <p className="text-red-600">Failed to load statistics. Please try again later.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={index}
+                    className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:border-indigo-300 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                    {stat.rawValue !== undefined && stat.rawValue > 0 && (
+                      <p className="text-xs text-gray-400 mt-1">Exact: {stat.rawValue.toLocaleString()}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Information Section */}
           <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-8">

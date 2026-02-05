@@ -51,6 +51,7 @@ model User {
   updatedAt     DateTime? @updatedAt
   accounts      Account[]
   sessions      Session[]
+  editorialBoardMembership EditorialBoardMember?
 }
 
 model VerificationToken {
@@ -65,6 +66,7 @@ enum UserRole {
   ADMIN
   AUTHOR
   REVIEWER
+  EDITOR
 }
 
 // Content models
@@ -121,6 +123,10 @@ model Content {
 
   // Tags (many-to-many)
   tags          ContentTag[]
+  
+  // Journal relationship (optional - content can be published in a journal)
+  journalId     String?
+  journal       Journal?  @relation(fields: [journalId], references: [id], onDelete: SetNull)
 
   createdAt     DateTime       @default(now())
 
@@ -178,4 +184,50 @@ enum CrossrefStatus {
   PENDING
   REGISTERED
   FAILED
+}
+
+// Editorial Board
+model EditorialBoardMember {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position   String?  // e.g., "Editor-in-Chief", "Associate Editor"
+  department String?  // e.g., "Business School", "Economics Department"
+  bio        String?  // Brief biography
+  order      Int      @default(0) // Display order (lower numbers appear first)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Journal {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String?
+  issn        String?       // International Standard Serial Number
+  eissn       String?       // Electronic ISSN
+  publisher   String?       // Publisher name
+  frequency   String?       // e.g., "Monthly", "Quarterly", "Bi-annual"
+  language    String?       // e.g., "English", "Multi-lingual"
+  openAccess  Boolean       @default(false)
+  impactFactor String?      // Journal Impact Factor
+  coverImage  String?       // URL to cover image
+  website     String?       // Journal website URL
+  submissionGuidelines String? // Submission guidelines in markdown/HTML
+  scope       String?       // Journal scope and aims
+  indexedIn   String?       // Where the journal is indexed (e.g., "Scopus, Web of Science")
+  status      JournalStatus @default(DRAFT)
+  featured    Boolean       @default(false)
+  order       Int           @default(0) // For custom ordering
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  content     Content[]     // Content published in this journal
+}
+
+enum JournalStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }

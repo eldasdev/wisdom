@@ -17,7 +17,8 @@ import {
   InformationCircleIcon,
   ArchiveBoxIcon,
   TagIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  NewspaperIcon
 } from '@heroicons/react/24/outline';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,6 +34,11 @@ export function Header() {
   ], [t]);
 
   const mainNavigation = useMemo(() => [
+    {
+      name: t.nav.journals || 'Journals',
+      href: '/journals',
+      hasDropdown: false,
+    },
     {
       name: t.nav.aboutUs,
       href: '/about/publishing',
@@ -114,7 +120,7 @@ export function Header() {
                 <BookOpenIcon className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#0C2C55] to-slate-600 bg-clip-text text-transparent hidden sm:block">
-                Wisdom
+                Prime SP
               </span>
             </Link>
           </div>

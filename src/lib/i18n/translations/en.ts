@@ -8,6 +8,7 @@ export const en = {
     contact: 'Contact',
     search: 'Search',
     analytics: 'Analytics',
+    journals: 'Journals',
   },
   // About Us
   about: {
@@ -79,7 +80,7 @@ export const en = {
   },
   // Home Page
   home: {
-    title: 'Wisdom Knowledge Hub',
+    title: 'Prime SP Knowledge Hub',
     subtitle: 'Discover academic articles, case studies, and research from leading scholars and practitioners',
     featuredContent: 'Featured Content',
     latestArticles: 'Latest Articles',

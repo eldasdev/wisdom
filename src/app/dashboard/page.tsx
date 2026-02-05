@@ -20,7 +20,7 @@ export default async function AuthorDashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return null;
+    redirect('/auth/signin');
   }
 
   const authorProfile = await prisma.author.findUnique({

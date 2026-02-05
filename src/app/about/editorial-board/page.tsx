@@ -4,62 +4,47 @@ import { PublicLayout } from '@/components/layout/PublicLayout';
 import { 
   AcademicCapIcon,
   BuildingOfficeIcon,
-  EnvelopeIcon,
   GlobeAltIcon,
   StarIcon
 } from '@heroicons/react/24/outline';
+import { useQuery } from '@tanstack/react-query';
+
+interface BoardMember {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  position: string | null;
+  institution: string | null;
+  department: string | null;
+  expertise: string | null;
+  bio: string | null;
+  order: number;
+}
 
 export default function EditorialBoardPage() {
-  const boardMembers = [
-    {
-      name: 'Dr. Sarah Johnson',
-      role: 'Editor-in-Chief',
-      institution: 'Harvard Business School',
-      expertise: 'Business Strategy & Management',
-      email: 'sarah.johnson@wisdom.edu',
-      image: 'SJ'
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['editorial-board-public'],
+    queryFn: async () => {
+      const response = await fetch('/api/editorial-board');
+      if (!response.ok) {
+        throw new Error('Failed to fetch editorial board members');
+      }
+      return response.json();
     },
-    {
-      name: 'Prof. Michael Chen',
-      role: 'Associate Editor',
-      institution: 'MIT Sloan School of Management',
-      expertise: 'Economics & Finance',
-      email: 'michael.chen@wisdom.edu',
-      image: 'MC'
-    },
-    {
-      name: 'Dr. Emily Rodriguez',
-      role: 'Associate Editor',
-      institution: 'Stanford University',
-      expertise: 'Language Sciences & Linguistics',
-      email: 'emily.rodriguez@wisdom.edu',
-      image: 'ER'
-    },
-    {
-      name: 'Prof. David Thompson',
-      role: 'Associate Editor',
-      institution: 'Oxford University',
-      expertise: 'Philosophy & Ethics',
-      email: 'david.thompson@wisdom.edu',
-      image: 'DT'
-    },
-    {
-      name: 'Dr. Lisa Anderson',
-      role: 'Editorial Board Member',
-      institution: 'Yale University',
-      expertise: 'Business & Economics',
-      email: 'lisa.anderson@wisdom.edu',
-      image: 'LA'
-    },
-    {
-      name: 'Prof. James Wilson',
-      role: 'Editorial Board Member',
-      institution: 'Cambridge University',
-      expertise: 'Philosophy & Logic',
-      email: 'james.wilson@wisdom.edu',
-      image: 'JW'
-    },
-  ];
+  });
+
+  const boardMembers: BoardMember[] = data?.members || [];
+
+  // Helper function to get initials from name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   return (
     <PublicLayout>
@@ -97,51 +82,81 @@ export default function EditorialBoardPage() {
             </p>
             <p className="text-lg text-gray-700 leading-relaxed">
               Each member is committed to ensuring that only the highest quality research is published, 
-              maintaining the integrity and reputation of Wisdom Publishing.
+              maintaining the integrity and reputation of Prime Scientific Publishing.
             </p>
           </div>
 
           {/* Board Members Grid */}
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Board Members</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {boardMembers.map((member, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                      {member.image}
+            
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading board members...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-600">Failed to load board members</p>
+              </div>
+            ) : boardMembers.length === 0 ? (
+              <div className="text-center py-12">
+                <AcademicCapIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No board members yet</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  The editorial board will be displayed here once members are added.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {boardMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      {member.image ? (
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                          {getInitials(member.name)}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
+                        <p className="text-sm text-emerald-600 font-medium">
+                          {member.position || 'Editorial Board Member'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
-                      <p className="text-sm text-emerald-600 font-medium">{member.role}</p>
+                    
+                    <div className="space-y-2 mb-4">
+                      {member.institution && (
+                        <div className="flex items-start gap-2">
+                          <BuildingOfficeIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-600">{member.institution}</span>
+                        </div>
+                      )}
+                      {(member.department || member.expertise) && (
+                        <div className="flex items-start gap-2">
+                          <AcademicCapIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-600">
+                            {member.department || member.expertise}
+                          </span>
+                        </div>
+                      )}
+                      {member.bio && (
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-3">{member.bio}</p>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-start gap-2">
-                      <BuildingOfficeIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{member.institution}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <AcademicCapIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{member.expertise}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <EnvelopeIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <a
-                        href={`mailto:${member.email}`}
-                        className="text-sm text-emerald-600 hover:text-emerald-700"
-                      >
-                        {member.email}
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Responsibilities Section */}

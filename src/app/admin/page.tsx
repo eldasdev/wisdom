@@ -1,5 +1,9 @@
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { DateFormatter } from '@/components/admin/DateFormatter';
+import { ReviewApproval } from '@/components/admin/ReviewApproval';
 import Link from 'next/link';
 import {
   UserGroupIcon,
@@ -16,6 +20,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default async function AdminDashboard() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect('/auth/signin');
+  }
+
+  if (session.user.role !== 'ADMIN') {
+    redirect('/');
+  }
   const [
     totalUsers,
     totalAuthors,
@@ -143,6 +156,9 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Review & Approval Section */}
+      <ReviewApproval />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Users */}

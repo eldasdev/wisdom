@@ -100,10 +100,10 @@ export default function StudentsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                Why Students Love Wisdom
+                Why Students Love Prime SP
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Wisdom provides students with free access to high-quality academic content to support their learning, research, and academic success.
+                Prime SP provides students with free access to high-quality academic content to support their learning, research, and academic success.
               </p>
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (

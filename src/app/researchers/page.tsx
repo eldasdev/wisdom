@@ -116,10 +116,10 @@ export default function ResearchersPage() {
             </div>
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                Why Researchers Choose Wisdom
+                Why Researchers Choose Prime SP
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Wisdom provides researchers with access to high-quality academic content and a platform to share their own research with a global audience.
+                Prime SP provides researchers with access to high-quality academic content and a platform to share their own research with a global audience.
               </p>
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (

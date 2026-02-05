@@ -70,7 +70,7 @@ export default function MissionPage() {
             <div className="prose prose-lg max-w-none">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission Statement</h2>
               <p className="text-xl text-gray-700 leading-relaxed mb-6">
-                Wisdom Publishing is dedicated to advancing knowledge and professional practice by providing a platform for high-quality, peer-reviewed academic and business content. We believe that knowledge should be accessible, credible, and impactful.
+                Prime Scientific Publishing is dedicated to advancing knowledge and professional practice by providing a platform for high-quality, peer-reviewed academic and business content. We believe that knowledge should be accessible, credible, and impactful.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
                 Our mission is to connect researchers, educators, students, and professionals with cutting-edge research, practical insights, and innovative solutions that drive positive change in academia, business, and society.

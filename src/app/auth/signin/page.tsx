@@ -60,7 +60,7 @@ export default function SignIn() {
             <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <BookOpenIcon className="w-7 h-7 text-white" />
             </div>
-            <span className="text-3xl font-bold text-white">Wisdom</span>
+            <span className="text-3xl font-bold text-white">Prime SP</span>
           </Link>
           
           <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
@@ -93,7 +93,7 @@ export default function SignIn() {
             <div className="w-10 h-10 bg-[#0C2C55] rounded-xl flex items-center justify-center">
               <BookOpenIcon className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">Wisdom</span>
+            <span className="text-2xl font-bold text-gray-900">Prime SP</span>
           </Link>
 
           <div className="text-center mb-8">

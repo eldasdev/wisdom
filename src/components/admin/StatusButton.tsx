@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { StatusModal } from './StatusModal';
 
 interface StatusButtonProps {
   contentId: string;
@@ -12,6 +13,18 @@ interface StatusButtonProps {
 
 export function StatusButton({ contentId, targetStatus, label, className }: StatusButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    doi?: string | null;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: '',
+  });
   const router = useRouter();
 
   const handleClick = async () => {
@@ -46,27 +59,47 @@ export function StatusButton({ contentId, targetStatus, label, className }: Stat
         throw new Error(data.error || 'Failed to update status');
       }
 
-      // Show success message
-      if (data.doiRegistration?.success) {
-        alert(`${data.message}\nDOI: ${data.doi}`);
-      }
+      // Show success modal
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Success',
+        message: data.message || 'Status updated successfully',
+        doi: data.doi || null,
+      });
 
       // Refresh the page to show updated status
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to update status');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to update status',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={isLoading}
-      className={`${className} disabled:opacity-50 disabled:cursor-not-allowed`}
-    >
-      {isLoading ? 'Updating...' : label}
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className={`${className} disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        {isLoading ? 'Updating...' : label}
+      </button>
+
+      <StatusModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal(prev => ({ ...prev, isOpen: false }))}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        doi={modal.doi}
+      />
+    </>
   );
 }

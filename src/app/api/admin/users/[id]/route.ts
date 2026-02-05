@@ -122,7 +122,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    if (role && ['USER', 'AUTHOR', 'ADMIN'].includes(role)) {
+    if (role && ['USER', 'AUTHOR', 'ADMIN', 'EDITOR', 'REVIEWER'].includes(role)) {
       updateData.role = role;
     }
 

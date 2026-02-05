@@ -36,7 +36,7 @@ export function CitationSection({
   doi,
   contentType,
   url,
-  publisher = 'Wisdom Publishing',
+  publisher = 'Prime Scientific Publishing',
 }: CitationSectionProps) {
   const [copied, setCopied] = useState(false);
   const [copiedDoi, setCopiedDoi] = useState(false);

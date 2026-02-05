@@ -79,7 +79,7 @@ export const ru = {
   },
   // Home Page
   home: {
-    title: 'Wisdom - Центр Знаний',
+    title: 'Prime SP - Центр Знаний',
     subtitle: 'Откройте для себя научные статьи, кейсы и исследования от ведущих ученых и практиков',
     featuredContent: 'Рекомендуемый Контент',
     latestArticles: 'Последние Статьи',

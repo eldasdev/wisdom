@@ -31,9 +31,9 @@ async function main() {
       name: 'Super Admin',
       email: 'admin@wisdom.com',
       title: 'Platform Administrator',
-      institution: 'Wisdom Publishing',
-      bio: 'Super administrator of the Wisdom academic publishing platform.',
-      website: 'https://wisdom.com',
+      institution: 'Prime Scientific Publishing',
+      bio: 'Super administrator of the Prime Scientific Publishing platform.',
+      website: 'https://primesp.com',
     },
   });
 
@@ -65,16 +65,16 @@ async function main() {
 
   // Create sample content for testing
   const sampleArticle = await prisma.content.upsert({
-    where: { slug: 'welcome-to-wisdom' },
+    where: { slug: 'welcome-to-prime-sp' },
     update: {},
     create: {
       type: 'ARTICLE',
-      title: 'Welcome to Wisdom',
-      slug: 'welcome-to-wisdom',
-      description: 'An introduction to the Wisdom academic publishing platform.',
-      content: `# Welcome to Wisdom
+      title: 'Welcome to Prime SP',
+      slug: 'welcome-to-prime-sp',
+      description: 'An introduction to the Prime Scientific Publishing platform.',
+      content: `# Welcome to Prime SP
 
-Welcome to the Wisdom academic publishing platform! This is a comprehensive platform for sharing academic and business insights, case studies, and research.
+Welcome to the Prime Scientific Publishing platform! This is a comprehensive platform for sharing academic and business insights, case studies, and research.
 
 ## Features
 
@@ -92,7 +92,7 @@ To get started, you can:
 3. Submit your own content
 4. Join the academic community
 
-We hope you enjoy exploring and contributing to Wisdom!`,
+We hope you enjoy exploring and contributing to Prime SP!`,
       publishedAt: new Date(),
       status: 'PUBLISHED',
       featured: true,

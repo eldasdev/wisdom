@@ -26,6 +26,7 @@ interface ContentFormData {
   featured: boolean;
   authorIds: string[];
   tags: string[];
+  journalId?: string; // Optional journal selection
   // PDF file
   pdfUrl?: string;
   pdfFileName?: string;
@@ -47,10 +48,18 @@ interface ContentFormData {
   pageRange?: string;
 }
 
+interface Journal {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+}
+
 export default function AdminCreateContentPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [journals, setJournals] = useState<Journal[]>([]);
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<ContentFormData>({
@@ -63,12 +72,14 @@ export default function AdminCreateContentPage() {
     featured: false,
     authorIds: [],
     tags: [],
+    journalId: '',
   });
 
   const [tagsInput, setTagsInput] = useState('');
 
   useEffect(() => {
     fetchAuthors();
+    fetchJournals();
   }, []);
 
   // Sync tags input with form data
@@ -85,6 +96,18 @@ export default function AdminCreateContentPage() {
       }
     } catch (err) {
       console.error('Failed to fetch authors:', err);
+    }
+  };
+
+  const fetchJournals = async () => {
+    try {
+      const response = await fetch('/api/admin/journals?status=PUBLISHED');
+      if (response.ok) {
+        const data = await response.json();
+        setJournals(data.journals || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch journals:', err);
     }
   };
 
@@ -463,7 +486,7 @@ export default function AdminCreateContentPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Create New Content</h1>
-          <p className="text-gray-600 mt-2">Add new content to the Wisdom platform</p>
+          <p className="text-gray-600 mt-2">Add new content to the Prime SP platform</p>
         </div>
         <Link
           href="/admin/content"
@@ -586,6 +609,31 @@ export default function AdminCreateContentPage() {
 
           {/* Common Metadata Fields */}
           {renderCommonMetadataFields()}
+        </div>
+
+        {/* Journal Selection */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Journal (Optional)</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Select a journal to publish this content in. Leave empty if not publishing in a journal.
+          </p>
+          <select
+            value={formData.journalId || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, journalId: e.target.value || undefined }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">No Journal (Standalone Content)</option>
+            {journals.map((journal) => (
+              <option key={journal.id} value={journal.id}>
+                {journal.title}
+              </option>
+            ))}
+          </select>
+          {journals.length === 0 && (
+            <p className="mt-2 text-sm text-gray-500">
+              No published journals available. <Link href="/admin/journals/create" className="text-blue-600 hover:text-blue-700">Create a journal</Link> first.
+            </p>
+          )}
         </div>
 
         {/* Authors */}

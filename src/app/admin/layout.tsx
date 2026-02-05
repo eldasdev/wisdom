@@ -14,7 +14,9 @@ import {
   HomeIcon,
   ArrowRightOnRectangleIcon,
   ShieldCheckIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  AcademicCapIcon,
+  NewspaperIcon
 } from '@heroicons/react/24/outline';
 
 export default async function AdminLayout({
@@ -24,7 +26,11 @@ export default async function AdminLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== 'ADMIN') {
+  if (!session) {
+    redirect('/auth/signin');
+  }
+
+  if (session.user.role !== 'ADMIN') {
     redirect('/');
   }
 
@@ -48,7 +54,7 @@ export default async function AdminLayout({
                   <ShieldCheckIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <span className="text-lg font-bold text-white">Wisdom</span>
+                  <span className="text-lg font-bold text-white">Prime SP</span>
                   <span className="text-xs text-white/60 block -mt-1">Admin Panel</span>
                 </div>
               </Link>
@@ -89,9 +95,10 @@ export default async function AdminLayout({
 
       <div className="flex">
         {/* Fixed Sidebar - starts after both headers (desktop only) */}
-        <aside className="hidden lg:block w-64 fixed top-32 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
+        <aside className="hidden lg:block w-64 fixed top-32 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-sm">
           <div className="flex flex-col h-full">
-            <nav className="flex-1 px-4 py-6 space-y-1">
+            {/* Scrollable Navigation */}
+            <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
               <div className="mb-4">
                 <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Management
@@ -138,6 +145,22 @@ export default async function AdminLayout({
                 Tags
               </Link>
               
+              <Link
+                href="/admin/editorial-board"
+                className="group flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 hover:text-[#0C2C55] hover:bg-[#0C2C55]/5 rounded-xl transition-all duration-200"
+              >
+                <AcademicCapIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-[#0C2C55] transition-colors" />
+                Editorial Board
+              </Link>
+              
+              <Link
+                href="/admin/journals"
+                className="group flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 hover:text-[#0C2C55] hover:bg-[#0C2C55]/5 rounded-xl transition-all duration-200"
+              >
+                <NewspaperIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-[#0C2C55] transition-colors" />
+                Journals
+              </Link>
+              
               <div className="pt-6 mt-6 border-t border-gray-200">
                 <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
                   Account
@@ -161,12 +184,12 @@ export default async function AdminLayout({
               </div>
             </nav>
             
-            {/* Sidebar Footer */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex items-center p-3 bg-gradient-to-r from-[#0C2C55]/5 to-transparent rounded-xl">
+            {/* Fixed Sidebar Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+              <div className="flex items-center p-3 bg-gradient-to-r from-[#0C2C55]/5 to-transparent rounded-xl border border-gray-200">
                 <BookOpenIcon className="w-8 h-8 text-[#0C2C55]" />
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-gray-900">Wisdom Platform</p>
+                  <p className="text-xs font-medium text-gray-900">Prime SP Platform</p>
                   <p className="text-xs text-gray-500">v1.0.0</p>
                 </div>
               </div>
@@ -196,6 +219,14 @@ export default async function AdminLayout({
             <Link href="/admin/tags" className="flex flex-col items-center px-3 py-2 text-gray-600 hover:text-[#0C2C55]">
               <TagIcon className="w-5 h-5" />
               <span className="text-xs mt-1">Tags</span>
+            </Link>
+            <Link href="/admin/editorial-board" className="flex flex-col items-center px-3 py-2 text-gray-600 hover:text-[#0C2C55]">
+              <AcademicCapIcon className="w-5 h-5" />
+              <span className="text-xs mt-1">Board</span>
+            </Link>
+            <Link href="/admin/journals" className="flex flex-col items-center px-3 py-2 text-gray-600 hover:text-[#0C2C55]">
+              <NewspaperIcon className="w-5 h-5" />
+              <span className="text-xs mt-1">Journals</span>
             </Link>
           </div>
         </div>

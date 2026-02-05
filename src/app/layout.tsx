@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Wisdom | Academic & Business Publishing",
+  title: "Prime SP | Academic & Business Publishing",
   description:
     "Professional academic and business publishing platform featuring articles, case studies, books, teaching notes, and curated collections.",
 };

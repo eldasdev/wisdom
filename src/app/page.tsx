@@ -180,7 +180,7 @@ export default function Home() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               <div className="group text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-[#0C2C55]/5 to-transparent hover:from-[#0C2C55]/10 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[#0C2C55] to-slate-600 bg-clip-text text-transparent mb-2 group-hover:scale-105 transition-transform duration-300">
-                  {stats.total.toLocaleString()}
+                  {((stats.total ?? stats.totalPublications) ?? 0).toLocaleString()}
                 </div>
                 <div className="flex items-center justify-center text-sm text-gray-600 font-medium">
                   <BookOpenIcon className="w-4 h-4 mr-1.5 text-[#0C2C55]" />
@@ -189,7 +189,7 @@ export default function Home() {
               </div>
               <div className="group text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-transparent hover:from-emerald-500/10 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2 group-hover:scale-105 transition-transform duration-300">
-                  {stats.byType.article || 0}
+                  {(stats.byType?.article ?? 0).toLocaleString()}
                 </div>
                 <div className="flex items-center justify-center text-sm text-gray-600 font-medium">
                   <DocumentTextIcon className="w-4 h-4 mr-1.5 text-emerald-600" />
@@ -198,7 +198,7 @@ export default function Home() {
               </div>
               <div className="group text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-violet-500/5 to-transparent hover:from-violet-500/10 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-2 group-hover:scale-105 transition-transform duration-300">
-                  {stats.byType['case-study'] || 0}
+                  {(stats.byType?.['case-study'] ?? 0).toLocaleString()}
                 </div>
                 <div className="flex items-center justify-center text-sm text-gray-600 font-medium">
                   <ChartBarIcon className="w-4 h-4 mr-1.5 text-violet-600" />
@@ -207,7 +207,7 @@ export default function Home() {
               </div>
               <div className="group text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-pink-500/5 to-transparent hover:from-pink-500/10 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-2 group-hover:scale-105 transition-transform duration-300">
-                  {stats.authors}
+                  {((stats.authors ?? stats.activeAuthors) ?? 0).toLocaleString()}
                 </div>
                 <div className="flex items-center justify-center text-sm text-gray-600 font-medium">
                   <UserIcon className="w-4 h-4 mr-1.5 text-pink-600" />

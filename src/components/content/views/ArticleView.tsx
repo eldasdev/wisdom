@@ -378,35 +378,6 @@ export function ArticleView({ content, relatedContent = [] }: ArticleViewProps) 
           </div>
         </div>
       )}
-
-      {/* Related Articles */}
-      {relatedContent && relatedContent.length > 0 && (
-        <div className="border-t border-gray-200 pt-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {relatedContent.slice(0, 4).map((related: any) => (
-              <Link
-                key={related.id}
-                href={`/articles/${related.slug}`}
-                className="group"
-              >
-                <article className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                  <h4 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
-                    {related.title}
-                  </h4>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {related.description}
-                  </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{related.authors?.[0]?.name || 'Anonymous'}</span>
-                    <span>{related.readTime} min read</span>
-                  </div>
-                </article>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </article>
   );
 }

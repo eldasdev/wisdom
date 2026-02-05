@@ -12,7 +12,7 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
-type UserRole = 'USER' | 'AUTHOR' | 'ADMIN';
+type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'EDITOR';
 
 interface UserFormData {
   name: string;
@@ -116,6 +116,7 @@ export default function CreateUserPage() {
   const roles: { value: UserRole; label: string; description: string }[] = [
     { value: 'USER', label: 'User', description: 'Basic access to view content' },
     { value: 'AUTHOR', label: 'Author', description: 'Can create and manage their own content' },
+    { value: 'EDITOR', label: 'Editor', description: 'Can edit, review, and moderate content' },
     { value: 'ADMIN', label: 'Admin', description: 'Full access to manage all content and users' },
   ];
 
@@ -265,7 +266,7 @@ export default function CreateUserPage() {
         </div>
 
         {/* Author Profile Option */}
-        {(formData.role === 'AUTHOR' || formData.role === 'ADMIN') && (
+        {(formData.role === 'AUTHOR' || formData.role === 'ADMIN' || formData.role === 'EDITOR') && (
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-start">
               <input

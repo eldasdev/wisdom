@@ -113,10 +113,10 @@ export default function EducatorsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                Why Educators Choose Wisdom
+                Why Educators Choose Prime SP
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Wisdom provides educators with access to high-quality, peer-reviewed content that enhances teaching and learning. Our platform offers a comprehensive library of resources designed specifically for educational use.
+                Prime SP provides educators with access to high-quality, peer-reviewed content that enhances teaching and learning. Our platform offers a comprehensive library of resources designed specifically for educational use.
               </p>
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -158,7 +158,7 @@ export default function EducatorsPage() {
             Ready to Enhance Your Teaching?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Explore our resources and discover how Wisdom can support your educational goals.
+            Explore our resources and discover how Prime SP can support your educational goals.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link

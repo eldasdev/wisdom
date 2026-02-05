@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   ChevronLeftIcon,
@@ -10,14 +10,19 @@ import {
   MagnifyingGlassMinusIcon,
   ArrowsPointingOutIcon,
   ArrowTopRightOnSquareIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 // Import CSS for react-pdf
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Set up PDF.js worker - use local copy for reliability
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// Set up PDF.js worker - use CDN version that matches react-pdf's internal PDF.js version
+// react-pdf 10.3.0 uses PDF.js 5.4.296, so we need to match that version
+if (typeof window !== 'undefined') {
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.296/pdf.worker.min.mjs`;
+}
 
 interface PdfViewerProps {
   pdfUrl: string;
@@ -58,6 +63,10 @@ export function PdfViewer({
   const [scale, setScale] = useState<number>(1.0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -91,6 +100,62 @@ export function PdfViewer({
     setScale(1.0);
   };
 
+  const fitToWidth = () => {
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.clientWidth - 32; // padding
+      // Assuming standard PDF width of 612 points (8.5 inches at 72 DPI)
+      const pdfWidth = 612;
+      const calculatedScale = (containerWidth / pdfWidth) * 0.9; // 90% of container
+      setScale(Math.max(0.5, Math.min(calculatedScale, 3)));
+    }
+  };
+
+  const handleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          await (containerRef.current as any).webkitRequestFullscreen();
+        } else if ((containerRef.current as any).msRequestFullscreen) {
+          await (containerRef.current as any).msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement
+      ));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = apiUrl;
@@ -105,8 +170,18 @@ export function PdfViewer({
     window.open(apiUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const handleSearch = () => {
+    setShowSearch(!showSearch);
+    if (showSearch) {
+      setSearchTerm('');
+    }
+  };
+
   return (
-    <div className={`bg-gray-100 rounded-lg overflow-hidden ${className}`}>
+    <div 
+      ref={containerRef}
+      className={`bg-gray-100 rounded-lg overflow-hidden ${className} ${isFullscreen ? 'fixed inset-0 z-50 m-0 rounded-none' : ''}`}
+    >
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
@@ -114,20 +189,20 @@ export function PdfViewer({
           <button
             onClick={goToPrevPage}
             disabled={pageNumber <= 1}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Previous page"
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           
-          <span className="text-sm text-gray-600 min-w-[100px] text-center">
+          <span className="text-sm text-gray-600 min-w-[100px] text-center font-medium">
             Page {pageNumber} of {numPages || '...'}
           </span>
           
           <button
             onClick={goToNextPage}
             disabled={pageNumber >= numPages}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Next page"
           >
             <ChevronRightIcon className="w-5 h-5" />
@@ -135,24 +210,66 @@ export function PdfViewer({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Search Button */}
+          <button
+            onClick={handleSearch}
+            className={`p-2 rounded transition-colors ${
+              showSearch 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+            title="Search in document"
+          >
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
+
+          {/* Search Input */}
+          {showSearch && (
+            <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded border border-gray-300">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search..."
+                className="text-sm outline-none bg-transparent w-32"
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchTerm('');
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          <div className="h-6 w-px bg-gray-300 mx-1" />
+
           {/* Zoom Controls */}
           <button
             onClick={zoomOut}
             disabled={scale <= 0.5}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Zoom out"
           >
             <MagnifyingGlassMinusIcon className="w-5 h-5" />
           </button>
           
-          <span className="text-sm text-gray-600 min-w-[60px] text-center">
+          <button
+            onClick={fitToWidth}
+            className="px-2 py-1 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors font-medium"
+            title="Fit to width"
+          >
             {Math.round(scale * 100)}%
-          </span>
+          </button>
           
           <button
             onClick={zoomIn}
             disabled={scale >= 3}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Zoom in"
           >
             <MagnifyingGlassPlusIcon className="w-5 h-5" />
@@ -160,8 +277,19 @@ export function PdfViewer({
 
           <button
             onClick={resetZoom}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
-            title="Reset zoom"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+            title="Reset zoom to 100%"
+          >
+            <span className="text-xs font-medium">100%</span>
+          </button>
+
+          <div className="h-6 w-px bg-gray-300 mx-1" />
+
+          {/* Fullscreen Button */}
+          <button
+            onClick={handleFullscreen}
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             <ArrowsPointingOutIcon className="w-5 h-5" />
           </button>
@@ -184,6 +312,7 @@ export function PdfViewer({
           <button
             onClick={handleDownload}
             className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            title="Download PDF"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Download</span>
@@ -192,7 +321,9 @@ export function PdfViewer({
       </div>
 
       {/* PDF Document */}
-      <div className="overflow-auto min-h-[600px] max-h-[900px] flex justify-center p-4">
+      <div className={`overflow-auto flex justify-center p-4 ${
+        isFullscreen ? 'h-[calc(100vh-60px)]' : 'min-h-[600px] max-h-[900px]'
+      }`}>
         {loading && (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

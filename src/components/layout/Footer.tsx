@@ -39,7 +39,7 @@ export function Footer() {
                 <BookOpenIcon className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#0C2C55] to-slate-600 bg-clip-text text-transparent">
-                Wisdom
+                Prime SP
               </span>
             </Link>
             <p className="text-sm text-gray-600 max-w-xs mb-6 leading-relaxed">
@@ -129,7 +129,7 @@ export function Footer() {
         <div className="mt-10 pt-8 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500 text-center sm:text-left">
-              © 2026 Wisdom Publishing. {t.footer.allRightsReserved}.
+              © 2026 Prime Scientific Publishing. {t.footer.allRightsReserved}.
             </p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
               <Link href="/privacy" className="text-sm text-gray-500 hover:text-[#0C2C55] transition-colors">

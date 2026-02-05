@@ -84,7 +84,7 @@ export default function AccessibilityPage() {
           <div className="prose prose-lg max-w-none">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Commitment</h2>
             <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              At Wisdom Publishing, we believe that knowledge should be accessible to everyone. We are committed to ensuring that our platform is usable by people with disabilities and follows accessibility best practices.
+              At Prime Scientific Publishing, we believe that knowledge should be accessible to everyone. We are committed to ensuring that our platform is usable by people with disabilities and follows accessibility best practices.
             </p>
             <p className="text-lg text-gray-700 leading-relaxed">
               We continuously work to improve the accessibility of our platform, incorporating feedback from users and following established accessibility standards and guidelines.

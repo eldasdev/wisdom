@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, slug, description, content, type, status, featured, authorIds, tags, metadata, pdfUrl, pdfFileName } = validationResult.data;
+    const { title, slug, description, content, type, status, featured, authorIds, tags, metadata, pdfUrl, pdfFileName, journalId } = validationResult.data;
 
     // Check if slug is unique
     const existingContent = await prisma.content.findUnique({
@@ -83,6 +83,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify journal exists if provided (outside transaction)
+    if (journalId) {
+      const journal = await prisma.journal.findUnique({
+        where: { id: journalId }
+      });
+      if (!journal) {
+        return NextResponse.json(
+          { error: 'Journal not found' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Start a transaction to create content and relationships
     const result = await prisma.$transaction(async (tx) => {
       // Create the content
@@ -99,40 +112,53 @@ export async function POST(request: NextRequest) {
           pdfUrl: pdfUrl || null,
           pdfFileName: pdfFileName || null,
           publishedAt: new Date(), // Always set publishedAt on creation
+          journalId: journalId || null,
         },
       });
 
-      // Create author relationships
-      for (const authorId of authorIds) {
-        await tx.contentAuthor.create({
-          data: {
-            contentId: newContent.id,
-            authorId,
-          },
-        });
+      // Create author relationships in batch
+      if (authorIds.length > 0) {
+        await Promise.all(
+          authorIds.map(authorId =>
+            tx.contentAuthor.create({
+              data: {
+                contentId: newContent.id,
+                authorId,
+              },
+            })
+          )
+        );
       }
 
-      // Create tag relationships
+      // Create tag relationships in batch
       if (tags && tags.length > 0) {
-        for (const tagName of tags) {
-          // Find or create tag
-          const tag = await tx.tag.upsert({
+        // First, upsert all tags to ensure they exist
+        const tagPromises = tags.map((tagName: string) =>
+          tx.tag.upsert({
             where: { name: tagName },
             update: {},
             create: { name: tagName },
-          });
+          })
+        );
 
-          // Create content-tag relationship
-          await tx.contentTag.create({
-            data: {
-              contentId: newContent.id,
-              tagId: tag.id,
-            },
-          });
-        }
+        const tagResults = await Promise.all(tagPromises);
+
+        // Then create all content-tag relationships
+        await Promise.all(
+          tagResults.map(tag =>
+            tx.contentTag.create({
+              data: {
+                contentId: newContent.id,
+                tagId: tag.id,
+              },
+            })
+          )
+        );
       }
 
       return newContent;
+    }, {
+      timeout: 10000, // 10 second timeout
     });
 
     return NextResponse.json({

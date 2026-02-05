@@ -16,6 +16,7 @@ interface ContentFormData {
   content: string;
   type: ContentType;
   tags: string[];
+  journalId?: string; // Optional journal selection
   // PDF file
   pdfUrl?: string;
   pdfFileName?: string;
@@ -38,9 +39,17 @@ interface ContentFormData {
   pageRange?: string; // For book chapters
 }
 
+interface Journal {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+}
+
 export default function CreateContentPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [journals, setJournals] = useState<Journal[]>([]);
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<ContentFormData>({
@@ -50,9 +59,26 @@ export default function CreateContentPage() {
     content: '',
     type: 'ARTICLE',
     tags: [],
+    journalId: '',
   });
 
   const [tagsInput, setTagsInput] = useState('');
+
+  useEffect(() => {
+    fetchJournals();
+  }, []);
+
+  const fetchJournals = async () => {
+    try {
+      const response = await fetch('/api/admin/journals?status=PUBLISHED');
+      if (response.ok) {
+        const data = await response.json();
+        setJournals(data.journals || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch journals:', err);
+    }
+  };
 
   const contentTypes = [
     { value: 'ARTICLE', label: 'Article', description: 'Research articles and insights' },
@@ -348,7 +374,7 @@ export default function CreateContentPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Create New Content</h1>
-          <p className="text-gray-600 mt-2">Share your knowledge with the Wisdom community</p>
+          <p className="text-gray-600 mt-2">Share your knowledge with the Prime SP community</p>
         </div>
         <Link
           href="/dashboard/content"
@@ -441,6 +467,31 @@ export default function CreateContentPage() {
               placeholder="Type a tag and press Enter"
             />
           </div>
+        </div>
+
+        {/* Journal Selection */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Journal (Optional)</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Select a journal to publish this content in. Leave empty if not publishing in a journal.
+          </p>
+          <select
+            value={formData.journalId || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, journalId: e.target.value || undefined }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">No Journal (Standalone Content)</option>
+            {journals.map((journal) => (
+              <option key={journal.id} value={journal.id}>
+                {journal.title}
+              </option>
+            ))}
+          </select>
+          {journals.length === 0 && (
+            <p className="mt-2 text-sm text-gray-500">
+              No published journals available.
+            </p>
+          )}
         </div>
 
         {/* Type-Specific Fields */}

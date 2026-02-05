@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { StatusActions } from './StatusActions';
 
 interface PageParams {
   params: { id: string };

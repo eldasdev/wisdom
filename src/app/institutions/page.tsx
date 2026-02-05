@@ -104,7 +104,7 @@ export default function InstitutionsPage() {
                 Institutional Partnership
               </h3>
               <p className="text-slate-200 leading-relaxed mb-6">
-                Partner with Wisdom to provide your institution with comprehensive access to academic content, research resources, and publishing opportunities. We work with institutions worldwide to support their academic and research missions.
+                Partner with Prime SP to provide your institution with comprehensive access to academic content, research resources, and publishing opportunities. We work with institutions worldwide to support their academic and research missions.
               </p>
               <Link
                 href="/contact"
@@ -142,7 +142,7 @@ export default function InstitutionsPage() {
       <div className="py-16 sm:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Partner with Wisdom
+            Partner with Prime SP
           </h2>
           <p className="text-lg text-gray-600 mb-8">
             Learn more about our institutional partnership programs and how we can support your institution.
